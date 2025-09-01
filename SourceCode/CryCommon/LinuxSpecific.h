@@ -3,7 +3,7 @@
 //  Crytek Engine Source File.
 //  Copyright (C), Crytek Studios, 2004.
 // -------------------------------------------------------------------------
-//  File name:   Linux32Specific.h
+//  File name:   LinuxSpecific.h
 //  Version:     v1.00
 //  Created:     05/03/2004 by MarcoK.
 //  Compilers:   Visual Studio.NET, GCC 3.2
@@ -21,6 +21,9 @@
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
+#include <dirent.h>
+#include <errno.h>
+#include <unistd.h>
 
 typedef unsigned int				DWORD;
 typedef unsigned int*				LPDWORD;
@@ -389,5 +392,77 @@ typedef void* PIXELFORMATDESCRIPTOR;
 
 typedef void* DEVMODE;
 typedef void* HINSTANCE;
+
+//Taken from https://github.com/OneSadCookie/fcaseopen
+inline int casepath(char const *path, char *r)
+{
+    size_t l = strlen(path);
+    char *p = alloca(l + 1);
+    strcpy(p, path);
+    size_t rl = 0;
+    
+    DIR *d;
+    if (p[0] == '/')
+    {
+        d = opendir("/");
+        p = p + 1;
+    }
+    else
+    {
+        d = opendir(".");
+        r[0] = '.';
+        r[1] = 0;
+        rl = 1;
+    }
+    
+    int last = 0;
+    char *c = strsep(&p, "/");
+    while (c)
+    {
+        if (!d)
+        {
+            return 0;
+        }
+        
+        if (last)
+        {
+            closedir(d);
+            return 0;
+        }
+        
+        r[rl] = '/';
+        rl += 1;
+        r[rl] = 0;
+        
+        struct dirent *e = readdir(d);
+        while (e)
+        {
+            if (strcasecmp(c, e->d_name) == 0)
+            {
+                strcpy(r + rl, e->d_name);
+                rl += strlen(e->d_name);
+
+                closedir(d);
+                d = opendir(r);
+                
+                break;
+            }
+            
+            e = readdir(d);
+        }
+        
+        if (!e)
+        {
+            strcpy(r + rl, c);
+            rl += strlen(c);
+            last = 1;
+        }
+        
+        c = strsep(&p, "/");
+    }
+    
+    if (d) closedir(d);
+    return 1;
+}
 
 #endif //_CRY_COMMON_LINUX_SPECIFIC_HDR_

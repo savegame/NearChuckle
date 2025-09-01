@@ -336,6 +336,9 @@ string& FormatPath( const string &sPath )
 	static char sLowerName[300];
 	strcpy(sLowerName, sPath.c_str());
 	int i = 0;
+#ifdef __linux
+	char* corrected;
+#endif
 	while (sLowerName[i] != 0)
 	{
 		if (sLowerName[i] == '\\')
@@ -347,6 +350,17 @@ string& FormatPath( const string &sPath )
 		}
 		i++;
 	}
+#ifdef __linux
+	if (!strncmp(sLowerName, "levels/", strlen("levels/")))
+	{
+		corrected = alloca(strlen(sLowerName) + 3);
+        if (casepath(sLowerName, corrected))
+        {
+            strTemp = corrected;
+			return strTemp;
+        }
+	}
+#endif
 	strTemp = sLowerName;
 	return strTemp;
 }
