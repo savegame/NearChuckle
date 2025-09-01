@@ -1506,6 +1506,14 @@ void CXGame::LoadLevelCS(bool keepclient, const char *szMapName, const char *szM
 		m_pSystem->GetILog()->Log("UISystem: Enabled 3D Engine!");
 	}
 
+#ifdef __linux
+	//Hack to stop first level from loading twice when starting a new game.
+	//This is possibly due to the fact that the game normally plays a Bink
+	//video when starting a new game (see Campaign.lua). Since Bink is disabled
+	//on Linux, the scripting might break and cause a duplicate load.
+	DeleteMessage("StartLevel Training Training");
+#endif
+
 	if (m_pSystem->GetIMovieSystem())
 		m_pSystem->GetIMovieSystem()->StopAllCutScenes();
 	//m_lstPlayedCutScenes.clear();
