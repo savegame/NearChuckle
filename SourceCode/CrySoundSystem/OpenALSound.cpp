@@ -861,7 +861,22 @@ DLL_API signed char     F_API CS_3D_SetAttributes(int channel, float *pos, float
 DLL_API signed char     F_API CS_3D_SetAttributes(int channel, const float *pos, const float *vel)
 #endif
 {
-	return 0;
+	if (channel < 0 || channel >= MAX_SOURCES)
+	{
+		return 0;
+	}
+
+	if (pos)
+	{
+		alSource3f(sources[channel], AL_POSITION, pos[0], pos[1], pos[2]);
+	}
+	
+	if (vel)
+	{
+		alSource3f(sources[channel], AL_VELOCITY, vel[0], vel[1], vel[2]);
+	}
+	
+	return 1;
 }
 #if 0
 DLL_API signed char     F_API CS_3D_GetAttributes(int channel, float *pos, float *vel)
@@ -882,7 +897,23 @@ DLL_API void            F_API CS_3D_Listener_SetAttributes(const float *pos, con
 	float fx, float fy, float fz, float tx, float ty, float tz)
 #endif
 {
+	ALfloat ori[6];
+	if (pos)
+	{
+		alListener3f(AL_POSITION, pos[0], pos[1], pos[2]);
+	}
+	if (vel)
+	{
+		alListener3f(AL_VELOCITY, vel[0], vel[1], vel[2]);
+	}
 
+	ori[0] = -fx;
+	ori[1] = fy;
+	ori[2] = -fz;
+	ori[3] = tx;
+	ori[4] = ty;
+	ori[5] = tz;
+	alListenerfv(AL_ORIENTATION, ori);
 }
 #if 0
 DLL_API void            F_API CS_3D_Listener_GetAttributes(float *pos, float *vel, float *fx,
@@ -897,7 +928,7 @@ DLL_API signed char     F_API CS_IsPlaying(int channel)
 	if (channel < 0 || channel >= MAX_SOURCES)
 	{
 		__builtin_trap();
-		return SOURCE_OUT_OF_BOUNDS;
+		return 0;
 	}
 	alGetSourcei(sources[channel], AL_SOURCE_STATE, &status);
 	if (status == AL_PLAYING)
