@@ -57,7 +57,7 @@ _DECLARE_SCRIPTABLEEX(CScriptObjectGame)
 CScriptObjectGame::CScriptObjectGame()
 {
 	m_pGame=NULL;
-
+	m_fLastServerRefresh=0;
 }
 
 CScriptObjectGame::~CScriptObjectGame()
@@ -308,6 +308,7 @@ void CScriptObjectGame::InitializeTemplate(IScriptSystem *pSS)
 	REG_FUNC(CScriptObjectGame,GetCurrentModName);
 	REG_FUNC(CScriptObjectGame,AddCommand);
 	REG_FUNC(CScriptObjectGame,EnableQuicksave);
+	REG_FUNC(CScriptObjectGame,GetServerIP);
 }
 
 int CScriptObjectGame::GetCDPath(IFunctionHandler *pH)
@@ -3846,7 +3847,7 @@ int CScriptObjectGame::GetModsList(IFunctionHandler * pH)
 	_SmartScriptObject pModDesc(m_pScriptSystem);	
 	pModDesc->SetValue("Title","- FarCry -");
 	pModDesc->SetValue("Name","FarCry");
-	pModDesc->SetValue("Version","1.3.3.0");
+	pModDesc->SetValue("Version","1.4.0.0");
 	pModDesc->SetValue("Author","Crytek");	
 	pModDesc->SetValue("Website","$2www.crytek.com");	
 	pModDesc->SetValue("Description","This is the normal FarCry game. \nLoad this in case you got another mod loaded,\nand you want to switch back to normal FarCry.");	
@@ -3931,4 +3932,31 @@ int CScriptObjectGame::EnableQuicksave(IFunctionHandler * pH)
 	m_pGame->AllowQuicksave(bEnable);
 
 	return pH->EndFunction();
+}
+
+//////////////////////////////////////////////////////////////////////////
+int CScriptObjectGame::GetServerIP(IFunctionHandler * pH)
+{	
+	if (!m_pGame->IsMultiplayer() || !m_pGame->GetModuleState(EGameServer))
+		pH->EndFunction(GetISystem()->GetINetwork()->GetUBIGameServerIP(true));
+
+	if	(m_pGame->IsServer() && m_pGame->m_pServer->m_pIServer->GetServerType()==eMPST_UBI)
+	{
+		const char *szIp=GetISystem()->GetINetwork()->GetUBIGameServerIP(false);
+		if (!szIp)
+		{
+			float fDiff=m_pSystem->GetITimer()->GetCurrTime()-m_fLastServerRefresh;
+			//m_pSystem->GetILog()->Log("refresh diff=%0.2f",fDiff);
+			if (fDiff>7)
+			{							
+				m_pScriptSystem->BeginCall("NewUbisoftClient","RefreshNETServerList");
+				m_pScriptSystem->EndCall();
+				m_fLastServerRefresh=m_pSystem->GetITimer()->GetCurrTime();
+			}
+			return pH->EndFunction("Refreshing server list...");
+		}
+		return pH->EndFunction(szIp);
+	}
+
+	return pH->EndFunction(GetISystem()->GetINetwork()->GetUBIGameServerIP(true));
 }

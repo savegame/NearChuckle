@@ -120,6 +120,8 @@ CNetwork::CNetwork()
 
 	m_pScriptSystem=0;
 	m_pClient=0;
+	m_szLocalIP[0]=0;
+	m_szUbiServer[0]=0;
 }
 
 CNetwork::~CNetwork()
@@ -289,6 +291,8 @@ IClient *CNetwork::CreateClient(IClientSink *pSink, bool bLocal)
 
 IServer *CNetwork::CreateServer(IServerSlotFactory *pFactory, WORD nPort, bool listen)
 {
+	memset(m_szUbiServer,0,sizeof(m_szUbiServer));
+
 	m_bHaveServer = true;
 	CServer *pServer = new CServer(this);
 	if (!pServer->Init(pFactory, nPort, listen))
@@ -715,19 +719,20 @@ void CNetwork::LogNetworkInfo()
 
 #if defined(LINUX)
 				const in_addr_windows *pin_addr_win = reinterpret_cast<const in_addr_windows*>(&temp.sin_addr);
-				CryLogAlways("  ip:%d.%d.%d.%d",		//  port:%d  family:%x",	
+				sprintf(m_szLocalIP,"%d.%d.%d.%d",				
 					(int)(pin_addr_win->S_un.S_un_b.s_b1),
 					(int)(pin_addr_win->S_un.S_un_b.s_b2),
 					(int)(pin_addr_win->S_un.S_un_b.s_b3),
 					(int)(pin_addr_win->S_un.S_un_b.s_b4));
 #else
-				CryLogAlways("  ip:%d.%d.%d.%d",		//  port:%d  family:%x",	
+				sprintf(m_szLocalIP,"%d.%d.%d.%d",								
 					(int)(temp.sin_addr.S_un.S_un_b.s_b1),
 					(int)(temp.sin_addr.S_un.S_un_b.s_b2),
 					(int)(temp.sin_addr.S_un.S_un_b.s_b3),
 					(int)(temp.sin_addr.S_un.S_un_b.s_b4));
 			//		(int)temp.sin_port,(unsigned int)temp.sin_family);
 #endif
+				CryLogAlways("  ip:%s",m_szLocalIP);		//  port:%d  family:%x",	
 				i++;
 			}		
 		}
@@ -815,4 +820,25 @@ void CNetwork::Client_ReJoinGameServer()
 	// If ubisoft is not running this won't do anything.
 	m_pUbiSoftClient->Client_ReJoinGameServer();
 #endif NOT_USE_UBICOM_SDK
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CNetwork::SetUBIGameServerIP(const char *szAddress) 
+{ 
+	if (!szAddress)
+		m_szUbiServer[0]=0;
+	else	
+		strncpy(m_szUbiServer,szAddress,sizeof(m_szUbiServer)); 
+}
+
+//////////////////////////////////////////////////////////////////////////
+const char *CNetwork::GetUBIGameServerIP(bool bLan) 
+{ 
+	if (bLan)
+		return (m_szLocalIP);
+
+	if (!m_szUbiServer[0])
+		return (NULL);
+
+	return(m_szUbiServer); 	
 }

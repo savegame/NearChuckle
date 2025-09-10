@@ -130,11 +130,40 @@ public:
 	inline  float	MouseGetVScreenX() { return m_Mouse.GetVScreenX(); }
 	inline  float	MouseGetVScreenY() { return m_Mouse.GetVScreenY(); }
 	inline  void	SetMouseInertia(float kinertia) { m_Mouse.SetInertia(kinertia); }
+#if 0
 	inline	bool	JoyButtonPressed(int p_numButton) { return (m_Joystick.IsButtonPressed(p_numButton)); }	
 	inline	int		JoyGetDir()		{ return (m_Joystick.GetDir()); }
 	inline	int		JoyGetHatDir()  { return (m_Joystick.GetHatDir()); }
 	inline	Vec3	JoyGetAnalog1Dir(unsigned int joystickID) const  { return (m_Joystick.GetAnalog1Dir(joystickID)); }		
-	inline	Vec3	JoyGetAnalog2Dir(unsigned int joystickID) const  { return (m_Joystick.GetAnalog2Dir(joystickID)); }		
+	inline	Vec3	JoyGetAnalog2Dir(unsigned int joystickID) const  { return (m_Joystick.GetAnalog2Dir(joystickID)); }	
+#else //--- NickH: new joystick code. API names have changed because button pressed functionality is different.
+	inline int JoyGetDefaultControllerId() const { return 0; }  // Enhance to allow selection amongst multiple sticks/gamepads
+	inline bool JoyIsRawBtnDown(int idCtrl,int p_numButton) { return m_Joystick.IsBtnDown(idCtrl,p_numButton); }
+	inline bool JoyIsRawBtnPressed(int idCtrl,int p_numButton) { return m_Joystick.IsBtnPressed(idCtrl,p_numButton); }
+	inline bool JoyIsRawBtnReleased(int idCtrl,int p_numButton) { return m_Joystick.IsBtnReleased(idCtrl,p_numButton); }
+	inline	int		JoyGetDir(int idCtrl)		{ return (m_Joystick.GetDir(idCtrl)); }	
+	inline	int		JoyGetHatDir(int idCtrl)  { return (m_Joystick.GetHatDir(idCtrl)); }
+	inline	int		JoyGetDirPressed(int idCtrl)		{ return (m_Joystick.GetDirPressed(idCtrl)); }
+	inline	int		JoyGetDirReleased(int idCtrl)		{ return (m_Joystick.GetDirReleased(idCtrl)); }	
+	inline	int		JoyGetHatDirPressed(int idCtrl)  { return (m_Joystick.GetHatDirPressed(idCtrl)); }
+	inline	int		JoyGetHatDirReleased(int idCtrl)  { return (m_Joystick.GetHatDirReleased(idCtrl)); }
+	inline	Vec3	JoyGetAnalog1Dir(int idCtrl) const  { return (m_Joystick.GetAnalog1Dir(idCtrl)); }		
+	inline	Vec3	JoyGetAnalog2Dir(int idCtrl) const  { return (m_Joystick.GetAnalog2Dir(idCtrl)); }		
+
+	bool JoyIsXKeyPressed(int idCtrl,int idXKey);
+	bool JoyIsXKeyDown(int idCtrl,int idXKey);
+	bool JoyIsXKeyReleased(int idCtrl,int idXKey);
+
+	virtual float GetJoySensitivityHGain(int idCtrl)       { return m_Joystick.GetHGain(idCtrl); }
+	virtual float GetJoySensitivityHScale(int idCtrl)      { return m_Joystick.GetHScale(idCtrl); }
+	virtual float GetJoySensitivityVGain(int idCtrl)       { return m_Joystick.GetVGain(idCtrl); }
+	virtual float GetJoySensitivityVScale(int idCtrl)      { return m_Joystick.GetVScale(idCtrl); }
+	virtual void SetJoySensitivityHGain(int idCtrl,float fHGain)   { m_Joystick.SetHGain(idCtrl,fHGain); }
+	virtual void SetJoySensitivityHScale(int idCtrl,float fHScale)  { m_Joystick.SetHScale(idCtrl,fHScale); }
+	virtual void SetJoySensitivityVGain(int idCtrl,float fVGain)   { m_Joystick.SetVGain(idCtrl,fVGain); }
+	virtual void SetJoySensitivityVScale(int idCtrl,float fVScale) { m_Joystick.SetVScale(idCtrl,fVScale); }
+
+#endif  // old or new joystick code.
 	inline  IKeyboard *GetKeyboard()        { return (&m_Keyboard); }
 	inline  IMouse * GetMouse()        { return (&m_Mouse); }
 	inline	int		GetKeyPressedCode()		{ return (m_Keyboard.GetKeyPressedCode()); }

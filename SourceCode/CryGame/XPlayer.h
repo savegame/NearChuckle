@@ -519,6 +519,15 @@ public:
 
 	//! Check if this player is visible.
 	bool IsVisible() const;
+
+	//! cameras updates
+	void UpdateFirstPersonView();
+	void UpdateThirdPersonView();
+
+	void UpdateWeapon();
+	void UpdateMelee();
+	void UpdateFireAnimations();
+
 protected:
 	void UpdateLean();	
 	Vec3 CalcLeanOffset(float leanAngle);
@@ -530,16 +539,13 @@ protected:
 	void	UpdateDead( SPlayerUpdateContext &ctx );
 	void	UpdateRotateHead();
 	void	ResetRotateHead();
-	void UpdateWeapon();
+
 	void UpdateBoatCamera();
-	void UpdateFirstPersonView();
-	void UpdateThirdPersonView();
 	void UpdateBonesRotation( );
 	bool UpdateBonesPtrs( );
-	void UpdateMelee();
+
 	void UpdateCharacterAnimations( SPlayerUpdateContext &ctx );
 	void UpdateCharacterAnimationsMounted( SPlayerUpdateContext &ctx );
-	void UpdateFireAnimations();
 	void UpdateJumpAnimations();
 	void ScaleAnimationSpeed( const float speed2d );
 	void StartAnimation( const SPlayerUpdateContext &ctx );

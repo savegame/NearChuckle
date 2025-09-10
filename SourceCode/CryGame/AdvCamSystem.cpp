@@ -4,6 +4,13 @@
 //	Crytek Source code 
 //	Copyright (c) Crytek 2001-2004
 //
+//  File: AdvCamSystem.cpp
+//  Description: Camera system functions for multiplayer.
+//
+//  History:
+//	- 02/12/2002: Created by Martin Mittring (modified version of CSpectator)
+//	- February 2005: Modified by Marco Corbetta for SDK release
+//
 //////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
@@ -14,6 +21,7 @@
 #include "Cry_Math.h"											// TMatrix_tpl
 #include "XEntityProcessingCmd.h"						// CXEntityProcessingCmd for ProcessKeys
 
+//////////////////////////////////////////////////////////////////////
 CAdvCamSystem::CAdvCamSystem(CXGame *pGame)
 {
 	m_pScriptObject=NULL;
@@ -81,8 +89,6 @@ void CAdvCamSystem::Update( void )
 		m_fMinRadius = (1.0f - blendFactor) * currentRadius + blendFactor * futureRadius;
 	}
 
-
-
 	Vec3 vDir=vDstPos-vSrcPos;
 
 	if (vDir.Length() < m_fMinRadius)
@@ -102,30 +108,27 @@ void CAdvCamSystem::Update( void )
 
 	if(pEC)
 	{
-			pEC->SetAngles(v3Angles);
-
-			pEC->SetPos(pEntity->GetPos());		// swing up and down - just for testing
+		pEC->SetAngles(v3Angles);
+		pEC->SetPos(pEntity->GetPos());		// swing up and down - just for testing
 	}
 }
 
+//////////////////////////////////////////////////////////////////////
 void CAdvCamSystem::OnSetAngles( const Vec3d &ang )
 {
-	/*if(m_pGame->m_pClient->GetPlayerID()==GetEntity()->GetId() || m_pGame->m_pClient->m_bLocalHost)
-		m_pGame->m_pClient->m_PlayerProcessingCmd.SetDeltaAngles(ang);*/
-
 }
 
-
+//////////////////////////////////////////////////////////////////////
 IScriptObject *CAdvCamSystem::GetScriptObject()
 {
 	return m_pScriptObject;
 }
 
+//////////////////////////////////////////////////////////////////////
 void CAdvCamSystem::SetScriptObject(IScriptObject *object)
 {
 	m_pScriptObject=object;
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 // Save upcast.
@@ -141,15 +144,13 @@ bool CAdvCamSystem::QueryContainerInterface(ContainerInterfaceType desired_inter
 	{
 		*ppInterface = 0;
 		return false;
-	}
-		
+	}		
 }
 
+//////////////////////////////////////////////////////////////////////
 void CAdvCamSystem::GetEntityDesc( CEntityDesc &desc ) const
 {
-
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 // Process input.
@@ -214,8 +215,7 @@ void CAdvCamSystem::ProcessKeys( CXEntityProcessingCmd &epc )
 		float fDistance = vToB.Length();
 		if (fDistance > m_fMaxRadius)
 		{
-			float weight = (fDistance - m_fMaxRadius)/10.0f;
-			//vToB.Normalize();
+			float weight = (fDistance - m_fMaxRadius)/10.0f;			
 
 			if (GetLengthSquared(vMoveDirB) > 0.01)
 			{
@@ -231,7 +231,7 @@ void CAdvCamSystem::ProcessKeys( CXEntityProcessingCmd &epc )
 		ISystem *pSystem = m_pGame->GetSystem();
 		IInput *pInput = pSystem->GetIInput();
 
-		if (pInput->JoyButtonPressed(7))
+		if (pInput->JoyIsRawBtnDown(pInput->JoyGetDefaultControllerId(),7))
 		{
 			bool isBlending;
 			m_pEntity->GetScriptObject()->GetValue("isBlending", isBlending);
@@ -247,7 +247,7 @@ void CAdvCamSystem::ProcessKeys( CXEntityProcessingCmd &epc )
 				}
 			}
 		}
-		if (pInput->JoyButtonPressed(6))
+		if (pInput->JoyIsRawBtnDown(pInput->JoyGetDefaultControllerId(),6))
 		{
 			bool isBlending;
 			m_pEntity->GetScriptObject()->GetValue("isBlending", isBlending);
@@ -263,7 +263,7 @@ void CAdvCamSystem::ProcessKeys( CXEntityProcessingCmd &epc )
 				}
 			}
 		}
-		if (!pInput->JoyButtonPressed(6) && !pInput->JoyButtonPressed(7))
+		if (!pInput->JoyIsRawBtnDown(pInput->JoyGetDefaultControllerId(),6) && !pInput->JoyIsRawBtnDown(pInput->JoyGetDefaultControllerId(),7))
 		{
 			bool isBlending;
 			m_pEntity->GetScriptObject()->GetValue("isBlending", isBlending);
@@ -305,6 +305,7 @@ void CAdvCamSystem::ProcessKeys( CXEntityProcessingCmd &epc )
 	}
 }
 
+//////////////////////////////////////////////////////////////////////
 bool CAdvCamSystem::Write(CStream &stm,EntityCloneState *cs)
 {
 	if(!stm.Write(m_eiPlayerA)) return false;
@@ -313,6 +314,7 @@ bool CAdvCamSystem::Write(CStream &stm,EntityCloneState *cs)
 	return true;
 }
 
+//////////////////////////////////////////////////////////////////////
 bool CAdvCamSystem::Read(CStream &stm)
 {
 	if(!stm.Read(m_eiPlayerA)) return false;
@@ -321,16 +323,19 @@ bool CAdvCamSystem::Read(CStream &stm)
 	return true;
 }
 
+//////////////////////////////////////////////////////////////////////
 void CAdvCamSystem::SetMinRadius(float radius)
 {
 	m_fMinRadius = radius;
 }
 
+//////////////////////////////////////////////////////////////////////
 void CAdvCamSystem::SetMaxRadius(float radius)
 {
 	m_fMaxRadius = radius;
 }
 
+//////////////////////////////////////////////////////////////////////
 Vec3 CAdvCamSystem::CalcPlayerMoveDirection(const Matrix33 &matCamera, unsigned int joyID) const
 {
 	Vec3 vMoveDir;
@@ -351,6 +356,7 @@ Vec3 CAdvCamSystem::CalcPlayerMoveDirection(const Matrix33 &matCamera, unsigned 
 	return vMoveDir;
 }
 
+//////////////////////////////////////////////////////////////////////
 void CAdvCamSystem::CalcCameraVectors(_SmartScriptObject &scriptObject, Vec3& vSrcPos, Vec3& vDstPos)
 {
 	CScriptObjectVector oVec(m_pGame->GetScriptSystem(),true);
@@ -457,6 +463,7 @@ void CAdvCamSystem::CalcCameraVectors(_SmartScriptObject &scriptObject, Vec3& vS
 	vDstPos += baseAB_fac*dst_ab_offset_fac;
 }
 
+//////////////////////////////////////////////////////////////////////
 void CAdvCamSystem::SetMoveDirection(CPlayer &player, const IEntity &entity, CXEntityProcessingCmd &epc, const Vec3 &vMoveDir, bool linked) const
 {
 	// we always move forward, so clear the processing command

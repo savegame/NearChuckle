@@ -6,6 +6,7 @@
 #include "LobbyDefines.h"
 #include "CommonDefines.h"
 #include "IConsole.h"									// ICVar
+#include "INetwork.h"									// SetServerIP for the game
 
 #if !defined(LINUX)
 #include <assert.h>
@@ -90,7 +91,7 @@ bool NewUbisoftClient::Server_RecreateServer()
 	int iIndex = 0;
 
 	if (GetRouterAddress(iIndex,szIPAddress,&usClientPort,&usRegServerPort))
-	{
+	{				
 		while (CRegisterServer::RegServerSend_RouterConnect(szIPAddress, usRegServerPort) == GS_FALSE)
 		{
 			m_pLog->Log("\001Ubi.com: RegServerSend_RouterConnect '%s:%d' failed",szIPAddress,(int)usRegServerPort);
@@ -100,7 +101,7 @@ bool NewUbisoftClient::Server_RecreateServer()
 				RegServerDisconnected();
 				return false;
 			}
-		}
+		}		
 	}
 
 	CRegisterServer::RegServerSend_LoginRouter(GUESTUSERNAME,GUESTPASSWORD,UBISOFT_GAME_VERSION);
@@ -161,7 +162,7 @@ GSvoid NewUbisoftClient::RegServerRcv_LoginRouterResult( GSubyte ucType, GSint l
 		RegServerDisconnected();
 		return;
 	}
-
+	
 	CRegisterServer::RegServerSend_RequestParentGroupOnLobby(GAME_NAME);
 }
 
@@ -177,6 +178,7 @@ GSvoid NewUbisoftClient::RegServerRcv_RegisterServerResult( GSubyte ucType,GSint
 	{
 		int iPort = sv_regserver_port->GetIVal();
 
+		//m_pLog->Log("UBI.COM - SERVER ADDRESS: %s",szAddress);				
 		if (!RegServerSend_LobbyServerConnection(szAddress, usPort,iPort,10))
 		{
 			m_pLog->Log("\001Ubi.com: LobbyServerConnection failed %s %i",szAddress,usPort);
@@ -184,7 +186,7 @@ GSvoid NewUbisoftClient::RegServerRcv_RegisterServerResult( GSubyte ucType,GSint
 			Server_RegisterServerFail();
 			return;
 		}
-
+		
 		RegServerSend_LobbyServerLogin(GUESTUSERNAME,iGroupID);
 
 	}
@@ -256,7 +258,7 @@ GSvoid NewUbisoftClient::RegServerRcv_LobbyServerDisconnection()
 GSvoid NewUbisoftClient::RegServerRcv_LobbyServerMemberNew( const GSchar* szMember,GSbool bSpectator,
 	const GSchar* szIPAddress, const GSchar* szAltIPAddress,
 	const GSvoid* pPlayerInfo, GSuint uiPlayerInfoSize,GSushort usPlayerStatus )
-{
+{	
 	Server_PlayerJoin(szMember);
 }
 

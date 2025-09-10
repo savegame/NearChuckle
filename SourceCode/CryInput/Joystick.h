@@ -7,7 +7,7 @@
 //
 //	History:
 //	-Jan 31,2001:Created by Marco Corbetta
-//
+//  -March 2005: NickH: Refactored and added Pressed,Down,Released functionality.
 //////////////////////////////////////////////////////////////////////
 
 #ifndef JOYSTICK_H
@@ -24,32 +24,8 @@
 
 #include "Cry_Math.h"
 
-#ifdef PS2
+#include <vector>
 
-#include <libpad.h>
-
-
-/////BUTTON'S ID FOR PS2
-
-#define PS2_BUTTON_SQUARE   1
-#define PS2_BUTTON_CROSS    2
-#define PS2_BUTTON_TRIANGLE 3
-#define PS2_BUTTON_CIRCLE   4
-#define PS2_BUTTON_L1       5
-#define PS2_BUTTON_L2       6
-#define PS2_BUTTON_R1       7
-#define PS2_BUTTON_R2       8
-#define PS2_BUTTON_START    9
-#define PS2_BUTTON_SELECT   10
-
-#define PS2_DIR_LEFT        1
-#define PS2_DIR_RIGHT       2
-#define PS2_DIR_UP          3
-#define PS2_DIR_DOWN        4
-
-
-
-#endif
 
 /*
 ===========================================
@@ -58,180 +34,144 @@ The Joystick interface Class
 */
 struct ILog;
 //////////////////////////////////////////////////////////////////////
+
+struct StickState
+{
+  uint32 m_buttons;  // spec allows a max of 32 buttons
+  unsigned char m_dirs[4];
+  unsigned char m_hatdirs[4];	
+
+  // this is for returning analog controller directional input. Input is in the range -1..1 for the x and y axis. z unused
+  Vec3	m_vAnalog1Dir;  // Axis 1..3 (commonly referred to as xyz)
+  // this is for returning analog controller directional input. Input is in the range -1..1 for the x and y axis. z unused
+  Vec3	m_vAnalog2Dir;  // Axis 4..6 (commonly referred to as ruv)
+
+  
+  StickState() { ClearState(); }
+  void ClearState();
+  StickState & operator=(const StickState &state);
+};
+
+struct Stick
+{
+  bool	m_hatswitch;
+  int		m_numbuttons;
+
+  #ifdef WIN32
+    LPDIRECTINPUTDEVICE8 m_pDIStick;
+  #else
+    unsigned m_idStick;
+  #endif
+
+  bool m_bInit;
+  float m_fHGain;
+  float m_fHScale;
+  float m_fVGain;
+  float m_fVScale;
+  StickState state;
+  StickState prev;
+
+  Stick() : m_hatswitch(false),m_numbuttons(0),m_bInit(false)
+            //,m_fHGain(2.4f),m_fHScale(1.0f),m_fVGain(2.4f),m_fVScale(0.4f)
+						,m_fHGain(1.0f),m_fHScale(1.0f),m_fVGain(1.0f),m_fVScale(1.0f)
+    {
+      #ifdef WIN32
+        m_pDIStick=0;
+      #else
+        m_idStick=0;
+      #endif
+    }
+
+  void ClearAllState() { state.ClearState(); prev.ClearState(); }
+  void ClearCurrentState() { state.ClearState(); }
+  void SaveState() { prev=state; }
+};
+
+typedef std::vector<Stick *> VSticks;
+typedef std::vector<Stick *>::iterator VSticksIter;
+
 class CJoystick
 {
 public:
 	CJoystick();
 	~CJoystick();
 
-	bool	Init(ILog *pLog);
+  #ifdef WIN32
+	  bool	Init(LPDIRECTINPUT8 lpdi,HINSTANCE hInst,HWND hWnd,ILog *pLog);
+  #else
+    bool	Init(ILog *pLog);
+  #endif
 	void	Update();			
 	void	ShutDown();
 
-	int		GetNumButtons();	
-	bool	IsButtonPressed(int buttonnum);
-	int		GetDir();
-	int		GetHatDir();
+	int		GetNumButtons(int idCtrl);	
+	bool	IsButtonPressed(int idCtrl,int buttonnum);
+  
+	int		GetDir(int idCtrl);
+	int		GetHatDir(int idCtrl);
+
+  int		GetDirPressed(int idCtrl);
+  int		GetDirReleased(int idCtrl);
+  int		GetHatDirPressed(int idCtrl);
+  int		GetHatDirReleased(int idCtrl);
+
+  bool IsBtnDown(int idCtrl,int idButton);
+  bool IsBtnPressed(int idCtrl,int idButton);
+  bool IsBtnReleased(int idCtrl,int idButton);
 
 	// get analog direction (two analog sticks)
-	Vec3	GetAnalog1Dir(unsigned int joystickID) const;
-	Vec3	GetAnalog2Dir(unsigned int joystickID) const;
+	Vec3	GetAnalog1Dir(int idCtrl) const;
+	Vec3	GetAnalog2Dir(int idCtrl) const;
+
+  // Get/Set Gain and scale used for joy sensitivity
+  float GetHGain(int idCtrl);
+  float GetHScale(int idCtrl);
+  float GetVGain(int idCtrl);
+  float GetVScale(int idCtrl);
+  void SetHGain(int idCtrl,float fHGain);
+  void SetHScale(int idCtrl,float fHScale);
+  void SetVGain(int idCtrl,float fVGain);
+  void SetVScale(int idCtrl,float fVScale);
+
+  void ClearState();
 
 private:	
 
 	bool	m_initialized;
 	bool	m_hatswitch;
 
-	int		m_numbuttons;	
+  unsigned int	m_numjoysticks;	//!<	Number of available joysticks
+  
+  //Stick **m_apSticks;             //!< State of each stick.
+  VSticks m_vSticks;                //!< State of each stick.
+
+
+	//int		m_numbuttons;	
 	float	m_joytime;
 	
-	unsigned char m_buttons[8];
-	unsigned char m_dirs[4];
-	unsigned char m_hatdirs[4];	
+	//unsigned char m_buttons[8];
+	//unsigned char m_dirs[4];
+	//unsigned char m_hatdirs[4];	
 
-	unsigned int	m_numjoysticks;	//!<	Number of available joysticks
 	// this is for returning analog controller directional input. Input is in the range -1..1 for the x and y axis. z unused
-	Vec3	*m_vAnalog1Dir;
-	Vec3	*m_vAnalog2Dir;
+	//Vec3	*m_vAnalog1Dir;
+	//Vec3	*m_vAnalog2Dir;
 
 	ILog *m_pLog;
 
-	
-	
-/////////////////////////////////////////////////////////////////
-///////////////PS2 SPECIFIC CODE ////////////////////////////////
-/////////////////////////////////////////////////////////////////	
-	
-#ifdef PS2
+  #ifdef WIN32
+    LPDIRECTINPUT8 m_pDI;
+    HINSTANCE m_hInst;
+    HWND m_hWnd;
 
-	//PS2 INTERFACE
-	public:
-	
-	
-	bool ButtonPressed(int Type);
-	bool ButtonHasBeenPressed(int Type);
-	
-	
-	bool DigitalCrossDirection(int Type);
-	unsigned char LeftStickX();
-	unsigned char LeftStickY();
-	unsigned char RightStickX();
-	unsigned char RightStickY();
-	
-	
+    // Internal Direct input init and enumeration of joysticks
+    bool InitJoyDI();
+    void AddJoyDI(LPCDIDEVICEINSTANCE lpddi);
+    bool PollDI(Stick *pStick);
 
-	//PS2 "INTERNAL" UTILITY 
-	private:
-	
-	void GetAnalog(unsigned char *pData);
-	void GetDigital(unsigned char *pData);
-	void GetButton(unsigned char *pData);
-	
-	//Convert the PS2 pad information in PC style format(used by the interface).
-	void ConvertPadInformation();
-
-	
-	//The type of Joystick
-	int JoyType;
-	
-	
-	//For analogic stick
-	unsigned char m_RightX;
-	unsigned char m_RightY;
-	
-	unsigned char m_LeftX;
-	unsigned char m_LeftY;
-	
-	//For digital stick
-	bool m_Left;
-	bool m_Right;
-	bool m_Up;
-	bool m_Down;
-	
-	//Digital button
-	
-	bool m_L1;
-	bool m_L2;
-	bool m_R1;
-	bool m_R2;
-	
-	bool m_Square;
-	bool m_Circle;
-	bool m_Triangle;
-	bool m_Cross;
-	
-	bool m_Start;
-	bool m_Select;
-	
-	bool m_TriggerL;
-	bool m_TriggerR;
-	
-	
-	
-	
-	
-	bool m_old_L1;
-	bool m_old_L2;
-	bool m_old_R1;
-	bool m_old_R2;
-	
-	bool m_old_Square;
-	bool m_old_Circle;
-	bool m_old_Triangle;
-	bool m_old_Cross;
-	
-	bool m_old_Start;
-	bool m_old_Select;
-	
-	bool m_old_TriggerL;
-	bool m_old_TriggerR;
-	
-	//USED TO SIMULATE MOUSE/////////////////
-	
-	float m_fMouseScreenX;
-	float m_fMouseScreenY;
-	
-	float m_fMouseDeltaX;
-	float m_fMouseDeltaY;
-	
-	public:
-	
-	float GetVScreenX();
-	float GetVScreenY();
-	
-	float GetDeltaX();
-	float GetDeltaY();
-	
-	
-	void SetScreenX(float x){m_MouseScreenX=x;}
-	void SetScreenY(float y){m_MouseScreenY=y;}
-	
-	
-	
-	//END MOUSE SIMULATION //////////////////
-	
-	
-	///USED TO SIMULATE THE KEYBOARD ////////
-
-	bool KeyDown(int p_key);
-	bool KeyPressed(int p_key);
-	
-	////////////////////////////////////////
-	
-	bool HasControl;
-	bool HasMovControl(){return HasControl;}
-	
-	
-	
-	
-	
-
-#endif
-
-/////////////////////////////////////////////////////////////////
-///////////////END PS2 SPECIFIC CODE ////////////////////////////
-/////////////////////////////////////////////////////////////////
-
+    // Direct Input joystick enumeration callback
+    friend BOOL CALLBACK Joy_DIEnumDevicesCallback(LPCDIDEVICEINSTANCE lpddi,LPVOID pvRef);
+  #endif
 };
 
 #endif

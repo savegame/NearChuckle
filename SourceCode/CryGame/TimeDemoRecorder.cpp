@@ -461,7 +461,8 @@ void CTimeDemoRecorder::PlayFrame()
 			if (m_demo_quit)
 			{
 				// Immidiate game abort after num loops done.
-				exit(0);
+				//exit(0);
+				GetISystem()->Release();
 			}
 		}
 	}

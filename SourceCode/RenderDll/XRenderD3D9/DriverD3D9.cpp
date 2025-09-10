@@ -123,6 +123,8 @@ CD3D9Renderer::CD3D9Renderer()
   iConsole->Register("d3d9_DecalOffset", &CV_d3d9_decaloffset, 15);
   iConsole->Register("d3d9_NoDepthMaps", &CV_d3d9_nodepthmaps, 0, VF_REQUIRE_APP_RESTART);
   iConsole->Register("d3d9_NormalMapScale", &CV_d3d9_normalmapscale, 0.15f, VF_REQUIRE_LEVEL_RELOAD);
+
+	m_bHackEMBM=false;
 }
 
 CD3D9Renderer::~CD3D9Renderer()

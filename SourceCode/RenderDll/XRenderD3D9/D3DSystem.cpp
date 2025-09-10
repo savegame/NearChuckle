@@ -1784,6 +1784,7 @@ void CD3D9Renderer::BuildPresentParamsFromSettings()
   }
   if (CV_r_fsaa)
   {
+		CV_r_fsaa = 1; // don't allow FSAA+HDR on ATI x1800/1900 due to problems in driver
     TArray<SAAFormat> Formats;
     int nNum = GetAAFormat(Formats, false);
     D3DMULTISAMPLE_TYPE nType = (D3DMULTISAMPLE_TYPE)Formats[nNum].nAPIType;

@@ -42,8 +42,12 @@ typedef unsigned int				u32;
 typedef unsigned long long	u64;
 
 typedef DWORD								DWORD_PTR;
-typedef int intptr_t, INT_PTR, *PINT_PTR;
-typedef unsigned int uintptr_t, UINT_PTR, *PUINT_PTR;
+typedef int INT_PTR, *PINT_PTR;
+typedef unsigned int UINT_PTR, *PUINT_PTR;
+#if defined(__GNUC__) && __GNUC__ < 3
+typedef int intptr_t;
+typedef unsigned int uintptr_t;
+#endif
 typedef char *LPSTR, *PSTR;
 
 typedef long LONG_PTR, *PLONG_PTR, *PLONG;

@@ -118,7 +118,7 @@ struct SScriptState
 };
  
 //////////////////////////////////////////////////////////////////////
-#define ENTITY_MAX_OBJECTS	16
+#define ENTITY_MAX_OBJECTS	256
 
 typedef std::map<string,unsigned char> EntityStateMap;
 typedef EntityStateMap::iterator EntityStateMapItor;

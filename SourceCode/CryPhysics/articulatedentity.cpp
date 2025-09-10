@@ -1861,10 +1861,13 @@ int CArticulatedEntity::CollectPendingImpulses(int idx,int &bNotZero)
 	}
 	if (idx==0)
 	{
-#if defined(LINUX)
-		vectornf(6,(float*)(m_Ya_vec[0])) = ::operator*((const matrix_tpl<float> &)matrixf(6,6,0,m_joints[0].fs->Ia_s_qinv_sT[0]), (const vectorn_tpl<float>&)vectornf(6,m_joints[0].fs->Ya_vec[0]));
+#ifdef __GNUC__
+		// GCC bug(?) workaround.
+		matrixf m(6,6,0,m_joints[0].fs->Ia_s_qinv_sT[0]);
+		vectornf v(6, m_joints[0].fs->Ya_vec[0]);
+		vectornf(6,m_Ya_vec[0]) = m * v;
 #else
-		vectornf(6,m_Ya_vec[0]) = matrixf(6,6,0,m_joints[0].fs->Ia_s_qinv_sT[0])*vectornf(6,m_joints[0].fs->Ya_vec[0]);
+		vectornf(6,m_Ya_vec[0]) = matrixf(6,6,0,m_joints[0].fs->Ia_s_qinv_sT[0])*vectornf(6, m_joints[0].fs->Ya_vec[0]);
 #endif
 	}
 	return curidx;

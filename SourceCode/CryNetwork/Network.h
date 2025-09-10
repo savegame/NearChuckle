@@ -93,6 +93,9 @@ public:
 	virtual bool VerifyMultiplayerOverInternet();
 	virtual void Client_ReJoinGameServer();
 
+	virtual void					SetUBIGameServerIP(const char *szAddress);
+	virtual const char		*GetUBIGameServerIP(bool bLan);
+
 	// -------------------------------------------------------------------------------
 
 	bool IsPacketCompressionEnabled() const;
@@ -157,6 +160,9 @@ private: // --------------------------------------------------------------------
 	DWORD										m_dwLocalIP;							//!< default: 0.0.0.0 local IPAddress (needed if we have several servers on one machine)
 	CDefenceWall *					m_pDefenceWall;						//!<
 	IClient *								m_pClient;								//!< pointer to the active client, otherwise 0 if there is not client active
+
+	char										m_szUbiServer[256];
+	char										m_szLocalIP[256];
 };
 
 #endif // !defined(AFX_NETWORK_H__9C2C8689_2D3A_4729_9DBD_A8A930264655__INCLUDED_)

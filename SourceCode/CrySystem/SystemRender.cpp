@@ -795,10 +795,10 @@ void CSystem::CreateRendererVars()
 	m_rHeight = GetIConsole()->CreateVariable("r_Height", "768", VF_DUMPTODISK,
 		"Sets the display height, in pixels. Default is 768.\n"
 		"Usage: r_Height [600/768]");
-	m_rColorBits = GetIConsole()->CreateVariable("r_ColorBits", "32", VF_DUMPTODISK,
+	m_rColorBits = GetIConsole()->CreateVariable("r_ColorBits", "32", VF_DUMPTODISK|VF_CHEAT,
 		"Sets the color resolution, in bits per pixel. Default is 32.\n"
 		"Usage: r_ColorBits [32/24/16/8]");
-	m_rDepthBits = GetIConsole()->CreateVariable("r_DepthBits", "32", VF_DUMPTODISK);
+	m_rDepthBits = GetIConsole()->CreateVariable("r_DepthBits", "32", VF_DUMPTODISK|VF_CHEAT);
 	m_rStencilBits = GetIConsole()->CreateVariable("r_StencilBits", "8", VF_DUMPTODISK);	
 	m_rDriver= GetIConsole()->CreateVariable("r_Driver", "Direct3D9", VF_DUMPTODISK,
 		"Sets the renderer driver. Default is 'Direct3D9'.\n"

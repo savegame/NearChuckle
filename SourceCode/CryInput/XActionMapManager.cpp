@@ -9,6 +9,8 @@
  
 #include <ISystem.h>
 
+#include "Cry_Math.h"
+
 #ifdef _DEBUG
 static char THIS_FILE[] = __FILE__;
 #ifdef _WIN32
@@ -201,7 +203,9 @@ bool CXActionMapManager::GetInvertedMouse()
 
 bool CXActionMapManager::CheckBind(XActionBind &bind,float &fVal,XActivationEvent &ae)
 {
+  Vec3 vAnalog;
 	int n=0;
+
 	while(n<MAX_BINDS_PER_ACTION)
 	{
 		//if (bind.keys[n].Bind.nKey==XKEY_MWHEEL_DOWN)
@@ -221,6 +225,30 @@ bool CXActionMapManager::CheckBind(XActionBind &bind,float &fVal,XActivationEven
 			case XKEY_MWHEEL_DOWN:
 				fVal=m_pInput->MouseGetDeltaZ();
 				break;
+      case XKEY_J_AXIS_1:
+        vAnalog = m_pInput->JoyGetAnalog1Dir(m_pInput->JoyGetDefaultControllerId());
+        fVal=vAnalog.x;
+        break;
+      case XKEY_J_AXIS_2:
+        vAnalog = m_pInput->JoyGetAnalog1Dir(m_pInput->JoyGetDefaultControllerId());
+        fVal=vAnalog.y;
+        break;
+      case XKEY_J_AXIS_3:
+        vAnalog = m_pInput->JoyGetAnalog1Dir(m_pInput->JoyGetDefaultControllerId());
+        fVal=vAnalog.z;
+        break;
+      case XKEY_J_AXIS_4:
+        vAnalog = m_pInput->JoyGetAnalog2Dir(m_pInput->JoyGetDefaultControllerId());
+        fVal=vAnalog.x;
+        break;
+      case XKEY_J_AXIS_5:
+        vAnalog = m_pInput->JoyGetAnalog2Dir(m_pInput->JoyGetDefaultControllerId());
+        fVal=m_bInvertedMouse ? -vAnalog.y : vAnalog.y;
+        break;
+      case XKEY_J_AXIS_6:
+        vAnalog = m_pInput->JoyGetAnalog2Dir(m_pInput->JoyGetDefaultControllerId());
+        fVal=vAnalog.z;
+        break;
 			default:
 				fVal=0.0;
 			}
@@ -285,7 +313,7 @@ bool CXActionMapManager::CheckPressedKey(struct XActionBind::tagKey &key)
 	else if(IS_JOYPAD_KEY(key.Bind.nKey))
 	{
 		//<<FIXME>> implement joypad
-		return false;
+    return m_pInput->JoyIsXKeyPressed(m_pInput->JoyGetDefaultControllerId(),key.Bind.nKey);
 	}
 #else // _XBOX
   else if(IS_GAMEPAD_KEY(key.Bind.nKey))
@@ -332,7 +360,15 @@ bool CXActionMapManager::CheckDoublePressedKey(struct XActionBind::tagKey &key)
 #ifndef _XBOX
 	else if(IS_JOYPAD_KEY(key.Bind.nKey))
 	{
-		
+    if(m_pInput->JoyIsXKeyPressed(m_pInput->JoyGetDefaultControllerId(),key.Bind.nKey))
+    {
+      if(nDeltaTime<300)
+      {
+        key.nLastPess=0;
+        return true;
+      }
+      key.nLastPess=m_nCurrentTime;
+    }
 		return false;
 	}
 #else // _XBOX
@@ -362,7 +398,7 @@ bool CXActionMapManager::CheckReleasedKey(struct XActionBind::tagKey &key)
 	else if(IS_JOYPAD_KEY(key.Bind.nKey))
 	{
 		//<<FIXME>> implement joypad
-		return false;
+    return m_pInput->JoyIsXKeyReleased(m_pInput->JoyGetDefaultControllerId(),key.Bind.nKey);
 	}
 #else //_XBOBX
 	else if(IS_GAMEPAD_KEY(key.Bind.nKey))
@@ -390,7 +426,7 @@ bool CXActionMapManager::CheckHoldKey(struct XActionBind::tagKey &key)
 #ifndef _XBOX
 	else if(IS_JOYPAD_KEY(key.Bind.nKey))
 	{
-		return false;
+    return m_pInput->JoyIsXKeyDown(m_pInput->JoyGetDefaultControllerId(),key.Bind.nKey);
 	}
 #else // _XBOX
   else if(IS_GAMEPAD_KEY(key.Bind.nKey))

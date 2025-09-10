@@ -189,7 +189,7 @@ CSystem::CSystem():
 	//[Timur] m_CreateDOMDocument = NULL;
 
 	m_cvAIUpdate = NULL;
-	i_direct_input = NULL;
+	i_direct_input = NULL;	
 
 	m_pScriptSink = NULL;
 	m_pUserCallback = NULL;
@@ -742,6 +742,13 @@ bool CSystem::CreateGame( const SGameInitParams &params )
 		CCommandLineSink_ConsoleCommands CmdlineSink(*this);
 
 		CApplicationHelper::ParseArguments(params.szGameCmdLine,0,&CmdlineSink);
+
+		if ((g_StartLevel->GetString()) && strlen(g_StartLevel->GetString())>1)
+		{
+			char szBuffer[256];
+			sprintf(szBuffer,"Game:LoadLevel(\"%s\")",g_StartLevel->GetString());
+			m_pScriptSystem->ExecuteBuffer(szBuffer,strlen(szBuffer));
+		}
 	}
 
 
@@ -1318,7 +1325,8 @@ void CSystem::OpenBasicPaks()
 	
 	string paksFolder = string(DATA_FOLDER)+"/*.pak";
 	// Open all *.pak files in root folder.
-	m_pIPak->OpenPacks( "*.pak" );
+	// [marco] removed as it could lead to severe security hacks.
+	//m_pIPak->OpenPacks( "*.pak" );
 	m_pIPak->OpenPacks( "",paksFolder.c_str() );
 }
 

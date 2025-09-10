@@ -54,7 +54,7 @@ m_pLog (pLog),
 m_setCachedFiles (CCachedFileDataOrder(), CachedFileDataAllocator(g_pSmallHeap)),
 m_bRememberOpenedFiles(false),
 m_pPakVars (pPakVars?pPakVars:&g_PakVars),
-m_mapMissingFiles ( std::less<string>(), MissingFileMapAllocator(g_pBigHeap) )
+m_mapMissingFiles ( std::less<const string>(), MissingFileMapAllocator(g_pBigHeap) )
 {
 	char szCurrentDir[0x800];
 #ifndef __linux

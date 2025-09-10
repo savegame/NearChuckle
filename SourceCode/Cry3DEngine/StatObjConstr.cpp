@@ -33,6 +33,10 @@ void CStatObj::FreeTriData()
 const char * CStatObj::GetScriptMaterialName(int Id)
 {
   CLeafBuffer *lb = m_pLeafBuffer;
+
+	if (!lb || !lb->m_pMats)
+		return NULL;
+
   if (Id < 0)
   {
     for (int i=0; i<lb->m_pMats->Count(); i++)

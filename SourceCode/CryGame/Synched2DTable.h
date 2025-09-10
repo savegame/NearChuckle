@@ -278,6 +278,7 @@ private: // --------------------------------------------------------------------
 	IScriptObject *		m_pScriptObject;					//!< to fulfull the IEntityContainer interface
 	CXGame *					m_pGame;									//!< pointer to the game where we are, must not be 0
 	TDirtyListsMap		m_ServerslotDirtylist;		//!< [player id] = DirtyList
+	float							m_fRefreshIndex;					//!< index into the table to refresh the table slowly so errors become corrected (increases with frametime)
 
 	// ------------------------------------------------------------------------------
 

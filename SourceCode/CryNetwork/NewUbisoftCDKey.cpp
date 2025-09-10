@@ -159,7 +159,8 @@ bool NewUbisoftClient::RequestCDKeyActivationID()
 	LoadCDKey(szCDkey);
 
 	ACTIVATION_INFO stActivationInfo;
-	strncpy(stActivationInfo.szGameName,GAME_NAME,GAMELENGTH);
+	//strncpy(stActivationInfo.szGameName,GAME_NAME,GAMELENGTH);
+	strncpy(stActivationInfo.szGameName,"FARCRY",GAMELENGTH);
 	strncpy(stActivationInfo.szCDKey,szCDkey,CDKEY_SIZE+1);
 
 	GSCDKey_RequestActivation(m_hCDKey,m_pCDKeyServer,&stActivationInfo,5);
@@ -311,7 +312,8 @@ bool NewUbisoftClient::Server_CheckPlayerAuthorizationID(BYTE bPlayerID,
 	m_pLog->Log("\001Ubi.com: CDKey CheckPlayerAuthorizationID: %i",bPlayerID);
 
 	AddAuthorizedID(bPlayerID,stID);
-	GSCDKey_ValidateUser(m_hCDKey,m_pCDKeyServer,const_cast<GSubyte*>(pubAuthorizationID),GAME_NAME,6);
+	//GSCDKey_ValidateUser(m_hCDKey,m_pCDKeyServer,const_cast<GSubyte*>(pubAuthorizationID),GAME_NAME,6);
+	GSCDKey_ValidateUser(m_hCDKey,m_pCDKeyServer,const_cast<GSubyte*>(pubAuthorizationID),"FARCRY",6);
 	return true;
 }
 

@@ -58,6 +58,8 @@ public:
 		EntityCloneState &inoutCloneState ) const;
 
 private: // ---------------------------------------------------------------------------
+	
+	void		ResetFirstPersonView();
 
 	EntityId					m_eiHost;							//!< 0 or the entity if we are currently spectating
 	IScriptObject *		m_pScriptObject;			//!<
@@ -66,6 +68,7 @@ private: // --------------------------------------------------------------------
 	float							m_roll;								//!< roll angle
 	Vec3d							m_vAngles;						//!< in degrees
 	float							m_fLastTargetSwitch;	//!< 
+	int								m_nSpectatorMode;	
 
 	friend class CScriptObjectSpectator;
 

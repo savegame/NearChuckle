@@ -87,16 +87,18 @@ int matrix_tpl<ftype>::conjugate_gradient(ftype *startx,ftype *rightside, ftype 
 		Ap = *this*p; denom = p*Ap;
 		if (sqr(denom)<1E-30) break;
 		a = r2/denom;	
-#if defined(LINUX)
-		r = ::operator-=(r, (const vectorn_tpl<ftype>&)(Ap*a));
+#ifdef __GNUC__
+		vectorn_tpl<ftype> ApXa(nRows, Ap * a);
+		r -= ApXa;
 #else
 		r -= Ap*a;
 #endif
 		r2new=r.len2();
 		if (r2new>r2*500)
 			break;
-#if defined(LINUX)
-		x = ::operator+=(x, (const vectorn_tpl<ftype>&)(p*a));
+#ifdef __GNUC__
+		vectorn_tpl<ftype> pXa(nRows, p * a);
+		x += pXa;
 #else
 		x += p*a;
 #endif
@@ -126,10 +128,13 @@ int matrix_tpl<ftype>::biconjugate_gradient(ftype *startx,ftype *rightside, ftyp
 		if (sqr(denom)<1E-30) break;
 		a = r2/denom;
 
-#if defined(LINUX)
-		r = ::operator-=(r, (const vectorn_tpl<ftype>&)(Ap*a));
-		rc = ::operator-=(rc, (const vectorn_tpl<ftype>&)((pc**this)*a));
-		x = ::operator+=(x, (const vectorn_tpl<ftype>&)(p*a));
+#ifdef __GNUC__
+		vectorn_tpl<ftype> ApXa(nRows, Ap * a);
+		r -= ApXa;
+		vectorn_tpl<ftype> pcXthisXa(nRows, (pc * *this) * a);
+		rc -= pcXthisXa;
+		vectorn_tpl<ftype> pXa(nRows, p * a);
+		x += pXa;
 #else
 		r -= Ap*a;
 		rc -= (pc**this)*a;
@@ -166,14 +171,16 @@ int matrix_tpl<ftype>::minimum_residual(ftype *startx,ftype *rightside, ftype mi
 		Ap = *this*p;	denom = Ap.len2();
 		if (sqr(denom)<1E-30) break;
 		a = r2/denom;
-#if defined(LINUX)
-		r = ::operator-=(r, (const vectorn_tpl<ftype>&)(Ap*a));
+#ifdef __GNUC__
+		vectorn_tpl<ftype> ApXa(nRows, Ap * a);
+		r -= ApXa;
 #else
 		r -= Ap*a; 
 #endif
 		rc = *this*r;
-#if defined(LINUX)
-		x = ::operator+=(x, (const vectorn_tpl<ftype>&)(p*a));
+#ifdef __GNUC__
+		vectorn_tpl<ftype> pXa(nRows, p * a);
+		x += pXa;
 #else
 		x += p*a;
 #endif

@@ -258,13 +258,13 @@ void CWeaponSystemEx::Reset()
 bool CWeaponSystemEx::ExecuteScript(const string& sScriptName)
 {
 	if (m_pScriptSystem == NULL)
-		return false;
-
-	string sFilename = "Scripts\\" + m_sGameType + "\\Entities\\" + sScriptName;
-	m_pGame->GetSystem()->GetILog()->Log("WEAPONEX : Loading %s",sFilename.c_str());
-	if (!m_pScriptSystem->ExecuteFile(sFilename.c_str(), m_bRaiseScriptError))
+		return false; 
+  
+	//string sFilename = "Scripts\\" + m_sGameType + "\\Entities\\" + sScriptName;
+	//m_pGame->GetSystem()->GetILog()->Log("WEAPONEX : Loading %s",sFilename.c_str());
+	//if (!m_pScriptSystem->ExecuteFile(sFilename.c_str(), m_bRaiseScriptError))
 	{
-		sFilename = "Scripts\\Default\\Entities\\" + sScriptName;
+		string sFilename = "Scripts\\Default\\Entities\\" + sScriptName;
 		m_pGame->GetSystem()->GetILog()->Log("WEAPONEX : Loading %s",sFilename.c_str());
 		if (!m_pScriptSystem->ExecuteFile(sFilename.c_str(), true))
 		{

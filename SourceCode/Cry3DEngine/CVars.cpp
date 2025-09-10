@@ -41,9 +41,9 @@ void CVars::Init()
 {
   // Ints
 	INIT_CVAR_CHEAT(e_allow_cvars_serialization,	1, "If set to zero - will not save cvars to cfg file");
-  INIT_CVAR_CHEAT(e_detail_objects,							1, "Activates drawing of detail objects");
+  INIT_CVAR_PUBL_(e_detail_objects,							1, "Activates drawing of detail objects");
   INIT_CVAR_CHEAT(e_fog,												1, "Activates distance based fog");
-  INIT_CVAR_CHEAT(e_motion_blur,								0, "Activates motion blur, values from 1 to 7 will change blur type");
+  INIT_CVAR_PUBL_(e_motion_blur,								0, "Activates motion blur, values from 1 to 7 will change blur type");
   INIT_CVAR_SER_R(e_beach,											1, "Activates drawing of shore on the border of the ocean");
   INIT_CVAR_CHEAT(e_detail_texture,							1, "Activates drawing of detail textures on terrain ground");
 	INIT_CVAR_SER_R(e_detail_texture_quality,			1, "0 - use one single texture per entire level, 1 - use multiple textures");
@@ -164,7 +164,7 @@ void CVars::Init()
 	INIT_CVAR_CHEAT(e_obj_view_dist_ratio,  55.0f, "View distance for vegetation, brushes and entities");
 	INIT_CVAR_CHEAT(e_dynamic_ambient_ratio, 1.0f, "Controls how object ambient level dependinds from surrounding lights");
 	INIT_CVAR_PUBL_(e_detail_texture_min_fov,0.55f,"If FOV is less - alternative version of terrain detail texturing will be used");
-	INIT_CVAR_SER_R_NET(e_vegetation_min_size,	 0.0f, "Minimal size of static object, smaller objects will be not rendered");
+	INIT_CVAR_CHEAT(e_vegetation_min_size,	 0.0f, "Minimal size of static object, smaller objects will be not rendered");
 	INIT_CVAR_CHEAT(e_terrain_occlusion_culling_precision, 0.15f, "Density of rays");
 	INIT_CVAR_PUBL_(e_terrain_lod_ratio,			1.f, "Set heightmap LOD");
 	INIT_CVAR_SER__(e_particles_lod,					1.f, "1 - full LOD, 0.5 - scale frequency and count down twice");

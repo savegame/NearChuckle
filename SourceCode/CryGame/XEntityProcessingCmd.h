@@ -81,6 +81,14 @@ public:
 	//! \param pBitStream must not be 0 (compressed or uncompressed)
 	bool Read( CStream &stm, IBitStream *pBitStream );
 
+	void SetMoveFwd(float fVal)   { m_fMoveFwd=fVal;    }
+	void SetMoveBack(float fVal)  { m_fMoveBack=fVal;   }
+	void SetMoveLeft(float fVal)  { m_fMoveLeft=fVal;   }
+	void SetMoveRight(float fVal) { m_fMoveRight=fVal;  }
+	float GetMoveFwd()            { return m_fMoveFwd;  }
+	float GetMoveBack()           { return m_fMoveBack; }
+	float GetMoveLeft()           { return m_fMoveLeft; }
+	float GetMoveRight()          { return m_fMoveRight;}
 	
 public: // ------------------------------------------------------------------
 
@@ -98,6 +106,11 @@ private: 	// ------------------------------------------------------------------
 	float							m_fServerDelta;			//!<
 	float							m_fClientDelta;			//!<
 	float							m_fLeaning;					//!<
+
+	float             m_fMoveFwd;         // 
+	float             m_fMoveBack;
+	float             m_fMoveLeft;
+	float             m_fMoveRight;
 };
 
 #endif // GAME_XENTITYPROCESSINGCMD_H

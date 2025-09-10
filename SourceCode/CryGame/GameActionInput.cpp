@@ -84,24 +84,34 @@ void CXGame::SetCommonKeyBindings(IActionMap *pMap)
 	//strafe left
 	pMap->BindAction(ACTION_MOVE_LEFT,XKEY_A);
 	pMap->BindAction(ACTION_MOVE_LEFT,XKEY_NUMPAD4);
+	//pMap->BindAction(ACTION_MOVE_LEFT,XKEY_J_DIR_LEFT);
 
 	//strafe right
 	pMap->BindAction(ACTION_MOVE_RIGHT,XKEY_D);
 	pMap->BindAction(ACTION_MOVE_RIGHT,XKEY_NUMPAD6);
+	//pMap->BindAction(ACTION_MOVE_RIGHT,XKEY_J_DIR_RIGHT);
 
 	//run forward
 	pMap->BindAction(ACTION_MOVE_FORWARD,XKEY_W);
 	//pMap->BindAction(ACTION_MOVE_FORWARD,XKEY_NUMPAD8);
 	pMap->BindAction(ACTION_MOVE_FORWARD,XKEY_NUMPAD5);
+	//pMap->BindAction(ACTION_MOVE_FORWARD,XKEY_J_DIR_UP);
+
+	pMap->BindAction(ACTION_MOVELR,XKEY_J_AXIS_1);
+	pMap->BindAction(ACTION_MOVEFB,XKEY_J_AXIS_2);
+
 
 	//run backward
 	pMap->BindAction(ACTION_MOVE_BACKWARD,XKEY_S);
 	//pMap->BindAction(ACTION_MOVE_BACKWARD,XKEY_NUMPAD5);
 	pMap->BindAction(ACTION_MOVE_BACKWARD,XKEY_NUMPAD2);
+	//pMap->BindAction(ACTION_MOVE_BACKWARD,XKEY_J_DIR_DOWN);
 
 	//look around
-	pMap->BindAction(ACTION_TURNLR,XKEY_MAXIS_X);
-	pMap->BindAction(ACTION_TURNUD,XKEY_MAXIS_Y);
+	//N pMap->BindAction(ACTION_TURNLR,XKEY_MAXIS_X);
+	//N pMap->BindAction(ACTION_TURNUD,XKEY_MAXIS_Y);
+	pMap->BindAction(ACTION_TURNLR,XKEY_J_AXIS_5);
+	pMap->BindAction(ACTION_TURNUD,XKEY_J_AXIS_4);
 		
 	//reload 
 	pMap->BindAction(ACTION_RELOAD,XKEY_R);
@@ -273,7 +283,7 @@ void CXGame::InitConsoleCommands()
 			"Usage: load_game gamename\n");
 
 		// marked with VF_CHEAT because it offers a MP cheat (impression to run faster on client)
-		pConsole->AddCommand("record",       "Game:StartRecord(%%)",VF_CHEAT,
+		pConsole->AddCommand("record",       "Game:StartRecord(%%)",VF_CHEAT, 
 			"Starts recording of a demo.\n"
 			"Usage: record demoname\n"
 			"File 'demoname.?' will be created.");
@@ -424,6 +434,11 @@ void CXGame::InitConsoleVars()
 		"Usage: cl_lazy_weapon [0..1]"
 		"Default value is 0.6.");
 
+	cl_use_joypad = GetISystem()->GetIConsole()->CreateVariable("cl_use_joypad", "0", VF_DUMPTODISK|VF_CHEAT,
+		"Toggles use of joypad for movements.\n"
+		"Usage: cl_use_joypad [0/1]\n"
+		"Default is 0 (off)."); 	
+
 	cl_weapon_fx = GetISystem()->GetIConsole()->CreateVariable("cl_weapon_fx","2",VF_DUMPTODISK,
 		"Control the complexity of weapon firing effects.\n"
 		"Usage: cl_weapon_fx [0..2], 0=low,1=medium,2=high"
@@ -445,7 +460,7 @@ void CXGame::InitConsoleVars()
 		"Control if underwater bullet bubble trails are displayed (should be disabled for slow machines).\n"
 		"Usage: w_underwaterbubbles 0/1"
 		"Default value is 1.");
-
+ 
 	g_MP_fixed_timestep = pConsole->CreateVariable("g_MP_fixed_timestep","0.01",VF_REQUIRE_NET_SYNC|VF_CHEAT,
 		"Enables fixed timestep physics simulation for multiplayer mode.\n"
 		"Usage: g_MP_fixed_timestep 0.01\n"
@@ -664,10 +679,6 @@ void CXGame::InitConsoleVars()
 		"server waits while trying to establish a connection with\n"
 		"a client."); 
 
-	g_StartLevel= pConsole->CreateVariable("g_StartLevel","DEFAULT",0,
-		"\n"
-		"Usage: \n"
-		"");	
 	g_StartMission= pConsole->CreateVariable("g_StartMission","",0,
 		"\n"
 		"Usage: \n"
@@ -990,6 +1001,8 @@ void CXGame::InitConsoleVars()
 		"this represent the downward impulse power applied when the player reach the max height of the jump, 0 means no impulse.\n"
 		"Usage: JumpNegativeImpulse 0-100 is a good range to test.\n"
 		"Default value is 0, disabled.\n");
+
+	g_first_person_spectator = pConsole->CreateVariable("gr_first_person_spectator","0",VF_REQUIRE_NET_SYNC);
 }
 
 void CXGame::ResetInputMap()
@@ -1002,6 +1015,8 @@ void CXGame::ResetInputMap()
 	ADD_ACTION(MOVE_LEFT,aamOnHold,"@MoveLeft",ACTIONTYPE_MOVEMENT,true) SetConfigToActionMap("MOVE_LEFT", ACTIONMAPS_ALL);
 	ADD_ACTION(MOVE_RIGHT,aamOnHold,"@MoveRight",ACTIONTYPE_MOVEMENT,true) SetConfigToActionMap("MOVE_RIGHT", ACTIONMAPS_ALL);
 	ADD_ACTION(MOVE_FORWARD,aamOnHold,"@MoveForward",ACTIONTYPE_MOVEMENT,true) SetConfigToActionMap("MOVE_FORWARD", ACTIONMAPS_NODEAD);
+	ADD_ACTION(MOVELR,aamOnHold,"@MoveLeftRight",0,false) SetConfigToActionMap("MOVELR", ACTIONMAPS_NODEAD);
+	ADD_ACTION(MOVEFB,aamOnHold,"@MoveFwdBack",0,false) SetConfigToActionMap("MOVEFB", ACTIONMAPS_NODEAD);
 
 	ADD_ACTION(WALK,aamOnHold,"@Walk",ACTIONTYPE_MOVEMENT,true) SetConfigToActionMap("WALK", ACTIONMAPS_NODEAD);
 	ADD_ACTION(RUNSPRINT,aamOnHold,"@SprintRun",ACTIONTYPE_MOVEMENT,true) SetConfigToActionMap("RUNSPRINT", ACTIONMAPS_NODEAD);
@@ -1333,7 +1348,7 @@ void CXGame::BindActionMultipleMaps(const char *sAction,const char *sKeys, int i
 						}
 					}
 				}
-NextAction:;
+NextAction:; 
 			}
 			BindAction(sAction, sKeys, (*Itor).c_str(), iKeyPos);
 		}

@@ -1685,14 +1685,27 @@ void CXGame::SaveConfiguration( const char *pszSystemCfg,const char *pszGameCfg,
 			fputs("-- Attention: This file will be overwritten when updated, so dont add lines ! Editing is not recommended !\r\n\r\n", pFile);
 			CActionMapDumpSink SaveActionMaps(this, pFile);
 			m_pIActionMapManager->GetActionMaps(&SaveActionMaps);
+			// Mouse
 			char sValue[32];
 			sprintf(sValue, "%4.4f", m_pSystem->GetIInput()->GetIMouse()->GetSensitvity());
 			fputs(string(string("Input:SetMouseSensitivity(")+string(sValue)+string(");\r\n")).c_str(), pFile);
 			m_pIActionMapManager->GetInvertedMouse() ? strcpy(sValue, "1") : strcpy(sValue, "nil");
 			fputs(string(string("Input:SetInvertedMouse(")+string(sValue)+string(");\r\n")).c_str(), pFile);
-			//Input:BindCommandToKey("#System:ShowDebugger();", "f8", 1);
-			//fputs("Input:BindCommandToKey(\"#System:ShowDebugger();\", \"f8\", 1);\r\n" ,pFile);
-			//Input:BindCommandToKey("\\SkipCutScene","F7",1);			
+
+			IInput *pInput=m_pSystem->GetIInput();
+			// Joy HGain
+			sprintf(sValue, "%4.4f", pInput->GetJoySensitivityHGain(pInput->JoyGetDefaultControllerId()));
+			fputs(string(string("Input:SetJoySensitivityHGain(")+string(sValue)+string(");\r\n")).c_str(), pFile);
+			// Joy HScale
+			sprintf(sValue, "%4.4f", pInput->GetJoySensitivityHScale(pInput->JoyGetDefaultControllerId()));
+			fputs(string(string("Input:SetJoySensitivityHScale(")+string(sValue)+string(");\r\n")).c_str(), pFile);
+			// Joy VGain
+			sprintf(sValue, "%4.4f", pInput->GetJoySensitivityVGain(pInput->JoyGetDefaultControllerId()));
+			fputs(string(string("Input:SetJoySensitivityVGain(")+string(sValue)+string(");\r\n")).c_str(), pFile);
+			// Joy VScale
+			sprintf(sValue, "%4.4f", pInput->GetJoySensitivityVScale(pInput->JoyGetDefaultControllerId()));
+			fputs(string(string("Input:SetJoySensitivityVScale(")+string(sValue)+string(");\r\n")).c_str(), pFile);
+			// Special keys
 			fputs("Input:BindCommandToKey(\"\\\\SkipCutScene\",\"F7\",1);\r\n",pFile);
 			fputs("Input:BindCommandToKey(\"\\\\SkipCutScene\",\"spacebar\",1);\r\n",pFile);
 			fclose(pFile); 
@@ -1708,6 +1721,7 @@ void CXGame::LoadConfiguration(const string &sSystemCfg,const string &sGameCfg)
 	FILE *pFile=fxopen(sGameCfg.c_str(), "rb");
 	if (!pFile)
 	{
+		m_pLog->Log("Error Loading game configuration '%s'",sGameCfg.c_str());
 		// if for some reason the game config is not found 
 		// (first time, new installation etc.)
 		char szBuffer[512];
@@ -1769,11 +1783,32 @@ void CXGame::LoadConfiguration(const string &sSystemCfg,const string &sGameCfg)
 			//if (strstr(szLine,"SkipCutScene"))											
 			// valid command
 			bValid=true;
-		}					
+		}							
+		else
+		if (strstr(szLine,"Input:SetJoySensitivityHGain"))
+		{
+			bValid=true;
+		}
+		else
+		if (strstr(szLine,"Input:SetJoySensitivityHScale"))
+		{
+			bValid=true;
+		}
+		else
+		if (strstr(szLine,"Input:SetJoySensitivityVGain"))
+		{
+			bValid=true;
+		}
+		else
+		if (strstr(szLine,"Input:SetJoySensitivityVScale"))
+		{
+			bValid=true;
+		}
 
 		if (bValid)
 		{					
 			strcpy(szBuffer,szLine);
+			m_pLog->Log("  '%s'",szBuffer);
 			m_pSystem->GetIScriptSystem()->ExecuteBuffer(szBuffer,strlen(szBuffer));
 		}
 		else
@@ -3003,7 +3038,7 @@ bool CXGame::LoadFromStream_PATCH_1(CStream &stm, bool isdemo, CScriptObjectStre
 		while((pEnt=pEntities->Next())!=NULL)
 			pEnt->PostLoad();		
 	}
-
+ 
 	pEntitySystem->Update();
 	m_pSystem->GetIMovieSystem()->PlayOnLoadSequences();	// yes, we reset this twice, the first time to remove all entity-pointers and now to restore them
 	m_pClient->Reset();

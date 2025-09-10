@@ -53,6 +53,14 @@ public:
 	int GetMouseSensitivity(IFunctionHandler *pH);
 	int SetMouseSensitivityScale(IFunctionHandler *pH);
 	int GetMouseSensitivityScale(IFunctionHandler *pH);
+	int SetJoySensitivityHGain(IFunctionHandler *pH);
+	int SetJoySensitivityHScale(IFunctionHandler *pH);
+	int SetJoySensitivityVGain(IFunctionHandler *pH);
+	int SetJoySensitivityVScale(IFunctionHandler *pH);
+	int GetJoySensitivityHGain(IFunctionHandler *pH);
+	int GetJoySensitivityHScale(IFunctionHandler *pH);
+	int GetJoySensitivityVGain(IFunctionHandler *pH);
+	int GetJoySensitivityVScale(IFunctionHandler *pH);
 	int GetXKeyPressedName(IFunctionHandler *pH);
 	int GetXKeyDownName(IFunctionHandler *pH);
 	int ResetKeyState(IFunctionHandler *pH);

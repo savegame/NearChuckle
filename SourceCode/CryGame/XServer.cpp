@@ -150,6 +150,9 @@ CXServer::CXServer(CXGame *pGame, WORD nPort, const char *szName, bool listen)
 
 	// get this info before we set the server
 	m_pGame->GetSystem()->SetForceNonDevMode(!m_pGame->IsDevModeEnable());
+	
+	INetwork *pNet=pGame->m_pSystem->GetINetwork();
+	pNet->SetUBIGameServerIP(NULL);
 
 	// fill m_ServerInfo structure
 	GetServerInfo();
@@ -179,7 +182,7 @@ CXServer::CXServer(CXGame *pGame, WORD nPort, const char *szName, bool listen)
 	m_ScriptObjectServer.SetServer(this);
 	m_bInDestruction=false;
 
-	LoadBanList();
+	LoadBanList();	
 
 	IScriptSystem *pScriptSystem = GetISystem()->GetIScriptSystem();
 	assert(pScriptSystem);

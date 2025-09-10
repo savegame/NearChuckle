@@ -27,9 +27,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 // Version of the game
 #define GAME_MAIN_VERSION						1						//!< [0..255]
-#define GAME_SUB_VERSION						3						//!< [0..255] patch version number, shown in menu
-#define GAME_PATCH_VERSION					3						//!< [0..256*256[
-#define SERVERINFO_FORMAT_VERSION		87				  //!< [0..255] bump if server info format changes (old version won't show up any more)
+#define GAME_SUB_VERSION						4						//!< [0..255] patch version number, shown in menu
+#define GAME_PATCH_VERSION					0						//!< [0..256*256[
+#define SERVERINFO_FORMAT_VERSION		88				  //!< [0..255] bump if server info format changes (old version won't show up any more)
 #define NETWORK_FORMAT_VERSION			5						//!< [0..2^32] bump if netcode stream format changes
  
 #define SAVEVERSION									23					// [Petar] Do not bump this value anymore it shows the release version of the savegame - it will always be supported
@@ -582,6 +582,7 @@ public:
 
 	ICVar* cl_scope_flare;
 	ICVar* cl_lazy_weapon;
+	ICVar* cl_use_joypad;
 	ICVar* cl_weapon_fx;
 	ICVar* cl_projectile_light;
 	ICVar* cl_weapon_light;
@@ -713,8 +714,7 @@ public:
 	ICVar* f_draw;
 	ICVar* f_drawDbg;
 */
-	ICVar* g_LevelName;
-	ICVar* g_StartLevel;
+	ICVar* g_LevelName;	
 	ICVar* g_StartMission;
 
 	ICVar *sv_port;
@@ -761,6 +761,7 @@ public:
 	ICVar* cv_game_physics_quality;
 
 	ICVar* cv_game_subtitles;
+	ICVar* g_first_person_spectator;
 
 	ICVar* g_timedemo_file;
 

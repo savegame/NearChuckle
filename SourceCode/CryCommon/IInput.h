@@ -1,3 +1,19 @@
+
+////////////////////////////////////////////////////////////////////////////
+//
+//	Crytek Source code 
+//	Copyright (c) Crytek 2001-2004
+//
+//  File: IInput.h
+//  Description: Input Interface.
+//
+//  History:
+//  - 08/08/2001: Created by Marco Corbetta 
+//	- Action map code by Alberto Demichelis
+//	- February 2005: Modified by Marco Corbetta for SDK release
+//
+//////////////////////////////////////////////////////////////////////
+
 #ifndef _IINPUT_H_
 #define _IINPUT_H_
 
@@ -47,6 +63,7 @@ enum EKeyModifiersFlags
 	XKEY_MOD_SHIFT = (0x010 | 0x020),
 };
 
+//////////////////////////////////////////////////////////////////////
 //JOYPAD	MOUSE		KEYBOARD
 //	00			00		0000
 enum KeyCodes {
@@ -220,8 +237,6 @@ enum KeyCodes {
 		XKEY_MAXIS_X			 = 0x000B0000,
 		XKEY_MAXIS_Y			 = 0x000C0000,
 
-		//JOYPAD
-
     //GAMEPAD
     XKEY_GP_A   	    		= 0x01000000,
     XKEY_GP_B       			= 0x02000000,
@@ -250,6 +265,64 @@ enum KeyCodes {
 		XKEY_GP_STHUMBLY      = 0x22000000,
     XKEY_GP_STHUMBRX      = 0x23000000,
 		XKEY_GP_STHUMBRY      = 0x24000000,
+
+    //JOYPAD
+    XKEY_J_BUTTON_01      = 0x30000000,   // Button numbers must be sequential, starting at button_01
+    XKEY_J_BUTTON_02      = 0x31000000,
+    XKEY_J_BUTTON_03      = 0x32000000,
+    XKEY_J_BUTTON_04      = 0x33000000,
+    XKEY_J_BUTTON_05      = 0x34000000,
+    XKEY_J_BUTTON_06      = 0x35000000,
+    XKEY_J_BUTTON_07      = 0x36000000,
+    XKEY_J_BUTTON_08      = 0x37000000,
+    XKEY_J_BUTTON_09      = 0x38000000,
+    XKEY_J_BUTTON_10      = 0x39000000,
+    XKEY_J_BUTTON_11      = 0x3a000000,
+    XKEY_J_BUTTON_12      = 0x3b000000,
+    XKEY_J_BUTTON_13      = 0x3c000000,
+    XKEY_J_BUTTON_14      = 0x3d000000,
+    XKEY_J_BUTTON_15      = 0x3e000000,
+    XKEY_J_BUTTON_16      = 0x3f000000,
+    XKEY_J_BUTTON_17      = 0x40000000,
+    XKEY_J_BUTTON_18      = 0x41000000,
+    XKEY_J_BUTTON_19      = 0x42000000,
+    XKEY_J_BUTTON_20      = 0x43000000,
+    XKEY_J_BUTTON_21      = 0x44000000,
+    XKEY_J_BUTTON_22      = 0x45000000,
+    XKEY_J_BUTTON_23      = 0x46000000,
+    XKEY_J_BUTTON_24      = 0x47000000,
+    XKEY_J_BUTTON_25      = 0x48000000,
+    XKEY_J_BUTTON_26      = 0x49000000,
+    XKEY_J_BUTTON_27      = 0x4a000000,
+    XKEY_J_BUTTON_28      = 0x4b000000,
+    XKEY_J_BUTTON_29      = 0x4c000000,
+    XKEY_J_BUTTON_30      = 0x4d000000,
+    XKEY_J_BUTTON_31      = 0x4e000000,
+    XKEY_J_BUTTON_32      = 0x4f000000,
+    XKEY_J_BUTTON_STEP    = (XKEY_J_BUTTON_02-XKEY_J_BUTTON_01),
+    XKEY_J_BUTTON_LAST    = XKEY_J_BUTTON_32,
+
+    XKEY_J_AXIS_1         = 0x50000000, // Axis numbers must be sequential, starting at AXIS_1
+    XKEY_J_AXIS_2         = 0x51000000,
+    XKEY_J_AXIS_3         = 0x52000000,
+    XKEY_J_AXIS_4         = 0x53000000,
+    XKEY_J_AXIS_5         = 0x54000000,
+    XKEY_J_AXIS_6         = 0x55000000,
+    XKEY_J_AXIS_STEP      = (XKEY_J_AXIS_2-XKEY_J_AXIS_1),
+    XKEY_J_AXIS_LAST      = XKEY_J_AXIS_6,
+
+    XKEY_J_DIR_UP         = 0x58000000, // Digital mapping of left stick. must be first
+    XKEY_J_DIR_DOWN       = 0x59000000,
+    XKEY_J_DIR_LEFT       = 0x5a000000,
+    XKEY_J_DIR_RIGHT      = 0x5b000000,
+    XKEY_J_DIR_LAST       = XKEY_J_DIR_RIGHT,
+
+    XKEY_J_HAT_UP         = 0x5c000000,   // must be first hat
+    XKEY_J_HAT_DOWN       = 0x5d000000,
+    XKEY_J_HAT_LEFT       = 0x5e000000,
+    XKEY_J_HAT_RIGHT      = 0x5f000000,
+    XKEY_J_HAT_LAST       = XKEY_J_HAT_RIGHT,
+
 };
 
 #ifndef _XBOX
@@ -362,13 +435,9 @@ enum KeyCodes {
 #endif //_XBOX
 #endif
 
-
-
-
+//////////////////////////////////////////////////////////////////////
 /*! Interface to the Keyboard system.
 */ 
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
 struct IKeyboard
 {
 	virtual void	ShutDown() = 0;
@@ -412,10 +481,9 @@ struct IKeyboard
 	virtual void	ClearKeyState() = 0;
 };
 
+//////////////////////////////////////////////////////////////////////
 /*! Interface to the Mouse system.
 */ 
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
 struct IMouse
 {
 	virtual void Shutdown() = 0;
@@ -475,8 +543,7 @@ struct IMouse
 	virtual void ClearKeyState() = 0;
 };
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 
 typedef int XACTIONID;
 
@@ -490,6 +557,7 @@ typedef int XACTIONID;
 	#define MAX_BINDS_PER_ACTION 2
 #endif
 
+//////////////////////////////////////////////////////////////////////
 enum XActionActivationMode
 {
 	aamOnPress,
@@ -499,6 +567,7 @@ enum XActionActivationMode
 	aamOnHold
 };
 
+//////////////////////////////////////////////////////////////////////
 enum XActivationEvent
 {
 	etPressing,
@@ -507,28 +576,25 @@ enum XActivationEvent
 	etDoublePressing
 };
 
+//////////////////////////////////////////////////////////////////////
 struct XBind
 {
 	XBind()
 	{
 		nKey=XKEY_NULL;
 		nModifier=XKEY_NULL;
-//		aam=aamOnPress;
-//		bConfigurable=false;
-//		bReplicate=false;
 	}
 	int nKey;
 	int nModifier;
-//	XActionActivationMode aam;
-//	bool bConfigurable;
-//	bool bReplicate;
 };
 
+//////////////////////////////////////////////////////////////////////
 struct IActionMapSink
 {
 	virtual void OnAction(XACTIONID nActionID, float fValue, XActivationEvent ae) = 0;
 };
 
+//////////////////////////////////////////////////////////////////////
 struct IActionMap
 {
 	virtual void ResetAllBindings() = 0;
@@ -544,11 +610,13 @@ struct IActionMap
 	virtual void GetBindDifferences(IActionMap *pActionMap, std::vector<int>& keys) = 0;
 };
 
+//////////////////////////////////////////////////////////////////////
 struct IActionMapDumpSink
 {
 	virtual void OnElementFound(const char *pszActionMapName, IActionMap *pActionMap) = 0;
 };
 
+//////////////////////////////////////////////////////////////////////
 struct IActionMapManager
 {
 	virtual void SetInvertedMouse(bool bEnable)=0;
@@ -578,8 +646,8 @@ struct IActionMapManager
 	virtual void Disable() = 0;
 	virtual bool IsEnabled() = 0;
 };
-//////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////
 typedef unsigned char INPUTACTIONID;
 
 //@{ Helper macros to implement the action triggers callback interface
@@ -588,6 +656,7 @@ typedef unsigned char INPUTACTIONID;
 #define REGISTER_INPUTACTIONTRIGGER(actionid, handler) case actionid: handler(fValue); break;
 //@}
 
+//////////////////////////////////////////////////////////////////////
 // Action triggers callback interface
 struct IInputActionTriggerSink
 {
@@ -623,8 +692,6 @@ struct IInputActionMap
 
 	virtual void ClearAction(const INPUTACTIONID nActionID) = 0;
 };
-
-
 
 //////////////////////////////////////////////////////////////////////
 // Input interface for the XBox controller
@@ -677,7 +744,7 @@ const unsigned int MAX_XBOX_CONTROLLERS = 4;
 const unsigned int XBOX_ANALOGSTICK_DEADZONE = 8000;
 //@}
 
-
+//////////////////////////////////////////////////////////////////////
 struct IGamepad
 {
 	virtual void ShutDown() = 0;
@@ -831,6 +898,8 @@ struct IInput
 	//! @see IMouse::SetInertia
 	virtual void SetMouseInertia(float) = 0;
 
+#if 0 //--- NickH: old joystick code. NB matching define in Input.h
+
 	//! check if the joystick button has been pressed
 	virtual bool	JoyButtonPressed(int p_numButton) = 0;
 
@@ -843,6 +912,45 @@ struct IInput
 	virtual Vec3	JoyGetAnalog1Dir(unsigned int joystickID) const  = 0;		
 	virtual Vec3	JoyGetAnalog2Dir(unsigned int joystickID) const  = 0;
 
+#else //--- NickH: new joystick code. API names have changed because button pressed functionality is different.
+	//! Get the currently selected stick/game-pad
+	virtual int JoyGetDefaultControllerId() const = 0;
+	//! check if the joystick button is held down
+	virtual bool JoyIsRawBtnDown(int idCtrl,int p_numButton) = 0;
+	//! check if the joystick button has just been pressed
+	virtual bool JoyIsRawBtnPressed(int idCtrl,int p_numButton) = 0;
+	//! check if the joystick button has just been released
+	virtual bool JoyIsRawBtnReleased(int idCtrl,int p_numButton) = 0;
+
+	//! check the joystick direction
+	virtual int	JoyGetDir(int idCtrl) = 0;	
+	virtual int	JoyGetDirPressed(int idCtrl) = 0;
+	virtual int	JoyGetDirReleased(int idCtrl) = 0;
+
+	//! check the joy hat direction
+	virtual int	JoyGetHatDir(int idCtrl) = 0;		
+	virtual int	JoyGetHatDirPressed(int idCtrl) = 0;
+	virtual int	JoyGetHatDirReleased(int idCtrl) = 0;
+
+	//! get the first 3 axis (xyz)
+	virtual Vec3 JoyGetAnalog1Dir(int idCtrl) const  = 0;		
+	//! get the next 3 axis (ruv)
+	virtual Vec3 JoyGetAnalog2Dir(int idCtrl) const = 0;
+
+	virtual bool JoyIsXKeyPressed(int idCtrl,int idXKey)=0;
+	virtual bool JoyIsXKeyDown(int idCtrl,int idXKey)=0;
+	virtual bool JoyIsXKeyReleased(int idCtrl,int idXKey)=0;
+
+	virtual float GetJoySensitivityHGain(int idCtrl)=0;
+	virtual float GetJoySensitivityHScale(int idCtrl)=0;
+	virtual float GetJoySensitivityVGain(int idCtrl)=0;
+	virtual float GetJoySensitivityVScale(int idCtrl)=0;
+	virtual void SetJoySensitivityHGain(int idCtrl,float fHGain)=0;
+	virtual void SetJoySensitivityHScale(int idCtrl,float fHScale)=0;
+	virtual void SetJoySensitivityVGain(int idCtrl,float fVGain)=0;
+	virtual void SetJoySensitivityVScale(int idCtrl,float fVScale)=0;
+#endif  // old or new joystick code.
+
 	//! return the keyboard interface 
 	virtual IKeyboard *GetIKeyboard() = 0;
 
@@ -850,7 +958,7 @@ struct IInput
 	virtual IMouse * GetIMouse() = 0;
 
 #ifdef _XBOX
-  //! return the Xbox gamepad interface 
+	//! return the Xbox gamepad interface 
 	virtual IGamepad * GetIGamepad() = 0;
 #endif
 
@@ -877,7 +985,7 @@ struct IInput
 	//! @see IKeyBoard::WaitForKey
 	virtual void	WaitForKey() = 0;
 
-  //! action mapper
+	//! action mapper
 	virtual struct IActionMapManager* CreateActionMapManager() = 0;
 
 	//! return the name of the current XKEY(both mouse and keyboard excluding mouse delta)
@@ -896,13 +1004,13 @@ struct IInput
 extern "C" {
 #endif
 
-struct ILog;
-struct IInput;
-struct ISystem;
+	struct ILog;
+	struct IInput;
+	struct ISystem;
 
-typedef IInput  (*  CRY_PTRCREATEINPUTFNC(ISystem *pSystem,void* hinst, void* hwnd, bool usedinput));
+	typedef IInput  (*  CRY_PTRCREATEINPUTFNC(ISystem *pSystem,void* hinst, void* hwnd, bool usedinput));
 
-CRYINPUT_API IInput *CreateInput(ISystem *pSystem,void* hinst, void* hwnd, bool usedinput);
+	CRYINPUT_API IInput *CreateInput(ISystem *pSystem,void* hinst, void* hwnd, bool usedinput);
 
 #ifdef __cplusplus
 };

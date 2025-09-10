@@ -1,9 +1,9 @@
 #ifndef _COMMON_DEFINES_
 #define _COMMON_DEFINES_
 
-#define UBISOFT_GAME_VERSION "FARCRYPC1.33"
-#define GAME_NAME "FARCRY"
-const char GSGAMEVERSION[5] = "1.33";
+#define UBISOFT_GAME_VERSION "FARCRYPC1.4"
+#define GAME_NAME "FARCRY_23dafdb864dd518d"
+const char GSGAMEVERSION[5] = "1.4";
 
 
 // Ubi.com Errors

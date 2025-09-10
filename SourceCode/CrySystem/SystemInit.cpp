@@ -1381,10 +1381,15 @@ void CSystem::CreateSystemVars()
 {
 	m_pCVarQuit = GetIConsole()->CreateVariable("ExitOnQuit","1",VF_DUMPTODISK);
 
-	i_direct_input = GetIConsole()->CreateVariable("i_direct_input", "1", VF_DUMPTODISK,
+	i_direct_input = GetIConsole()->CreateVariable("i_direct_input", "1", VF_DUMPTODISK|VF_CHEAT,
 		"Toggles direct input capability.\n"
 		"Usage: i_direct_input [0/1]\n"
-		"Default is 1 (on).");
+		"Default is 1 (on)."); 
+
+	g_StartLevel= GetIConsole()->CreateVariable("g_StartLevel","",VF_DUMPTODISK,
+		"\n"
+		"Usage: \n"
+		"");	
 
 	//////////////////////////////////////////////////////////////////////////
 	// SCRIPT DEBUGGER

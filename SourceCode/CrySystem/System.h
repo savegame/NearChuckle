@@ -433,8 +433,9 @@ private: // ------------------------------------------------------
 	ICVar *m_rFullscreen;
 	ICVar *m_rDriver;
 	ICVar *m_rDisplayInfo;
-	ICVar *m_sysNoUpdate;
+	ICVar *m_sysNoUpdate;	
 	ICVar *i_direct_input;
+	ICVar *g_StartLevel;
 	ICVar *sys_script_debugger;
 	ICVar *m_cvEntitySuppressionLevel;
 	ICVar *m_pCVarQuit;

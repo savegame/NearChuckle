@@ -5,7 +5,7 @@
 #include "NewUbisoftClient.h"
 #include "LobbyDefines.h"
 #include "CommonDefines.h"
-
+#include "IConsole.h" // to get cvars
 
 #if !defined(LINUX)
 	#include "windows.h"
@@ -366,11 +366,20 @@ GSvoid NewUbisoftClient::GameServerCB(GSint iLobbyID,GSint iRoomID,GSshort siGro
 {
 	char *szPort = (char*)vpInfo;
 	char szGameIPAddress[32],szGameLANIPAddress[32];
-
-	m_pLog->Log("Ubi.com: GameServerCB %s %i %i",szGroupName,iLobbyID, iRoomID);
 	_snprintf(szGameIPAddress,32,"%s:%s",szIPAddress,szPort);
 	_snprintf(szGameLANIPAddress,32,"%s:%s",szAltIPAddress,szPort);
 
+	ICVar *szMyServer=m_pSystem->GetIConsole()->GetCVar("sv_name");	
+	if (szMyServer)
+	{	
+		const char *szMyServerName=szMyServer->GetString();		
+		if (szMyServerName[0] && stricmp(szGroupName,szMyServerName)==0)
+		{
+			m_pLog->Log("Ubi.com: SERVER FOUND GameServerCB %s %i %i %s %s",szGroupName,iLobbyID, iRoomID,szGameIPAddress,szGameLANIPAddress);			
+			m_pSystem->GetINetwork()->SetUBIGameServerIP(szGameIPAddress);
+		}
+	}
+	
 	Client_GameServer(iLobbyID,iRoomID,szGroupName,szGameIPAddress,szGameLANIPAddress,
 		uiMaxPlayer,uiNbrPlayer);
 }
@@ -475,6 +484,8 @@ GSvoid NewUbisoftClient::JoinFinishedCB(GSint iLobbyID,GSint iRoomID,
 		GSvoid *vpGameData,GSint iSize,GSchar *szIPAddress,
 		GSchar *szAltIPAddress,GSushort usPort)
 {
+	//m_pLog->Log("UBI.COM - SERVER ADDRESS: %s, %s",szIPAddress,szAltIPAddress);			
+
 	m_eClientState = JoinedGameServer;
 	Client_ConnectedToGameServer();
 	Client_JoinGameServerSuccess(szIPAddress,szAltIPAddress,usPort);

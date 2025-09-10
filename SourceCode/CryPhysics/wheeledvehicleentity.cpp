@@ -965,9 +965,11 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
 			if (j==-1)
 				break;
 			sval = s.val(); 
-#if defined(LINUX)
-			p = ::operator+=(p, (const vectorn&)(dp*sval)); 
-			v = (const vectorn&)(dv.operator*(sval));
+#ifdef __GNUC__
+			vectorn dpXsval(nfr, dp * sval);
+			p += dpXsval;
+			vectorn dvXsval(nfr, dv * sval);
+			v += dvXsval;
 #else
 			p += dp*sval; 
 			v += dv*sval;
