@@ -12,6 +12,12 @@
 
 #define MAX_SOUND_FILENAME 128
 
+#if 0
+#define AL_LOG(...) printf(__VA_ARGS__);
+#else
+#define AL_LOG
+#endif
+
 typedef struct
 {
 	ALuint buf;
@@ -78,7 +84,7 @@ DLL_API signed char     F_API CS_Init(int mixrate, int maxsoftwarechannels, unsi
 
 DLL_API void            F_API CS_Close()
 {
-	printf("OpenAL: Deleting %lu buffers.\n", buffers.size());
+	AL_LOG("OpenAL: Deleting %lu buffers.\n", buffers.size());
 	for (size_t i = 0; i < buffers.size(); i++)
 	{
 		alDeleteBuffers(1, &buffers[i]->buf);
@@ -291,11 +297,11 @@ DLL_API CS_SAMPLE * F_API CS_Sample_Load(int index, const char *name_or_data, un
 			strcpy(samp->filename, "<MEMORY>");
 
 			buffers.push_back(samp);
-			printf("OpenAL: There are now %i buffers.\n", buffers.size());
+			AL_LOG("OpenAL: There are now %i buffers.\n", buffers.size());
 		}
 		else
 		{
-			printf("OpenAL: Failed to load wav\n");
+			AL_LOG("OpenAL: Failed to load wav\n");
 		}
 	}
 	else
@@ -603,7 +609,7 @@ DLL_API CS_STREAM*    F_API CS_Stream_Open(const char *name_or_data, unsigned in
 				strcpy(samp->filename, name_or_data);
 				
 				buffers.push_back(samp);
-				printf("OpenAL: There are now %lu buffers.\n", buffers.size());
+				AL_LOG("OpenAL: There are now %lu buffers.\n", buffers.size());
 			}
 			else
 			{
@@ -631,11 +637,11 @@ DLL_API CS_STREAM*    F_API CS_Stream_Open(const char *name_or_data, unsigned in
 				strcpy(samp->filename, name_or_data);
 				
 				buffers.push_back(samp);
-				printf("OpenAL: There are now %lu buffers.\n", buffers.size());
+				AL_LOG("OpenAL: There are now %lu buffers.\n", buffers.size());
 			}
 			else
 			{
-				printf("OpenAL: %s has a bad format!\n", name_or_data);
+				AL_LOG("OpenAL: %s has a bad format!\n", name_or_data);
 			}
 		}
 		else
@@ -697,6 +703,9 @@ DLL_API int             F_API CS_Stream_PlayEx(int channel, CS_STREAM* stream, C
 	}
 	
 	alSourcei(src, AL_BUFFER, samp->buf);
+	alSourcei(src, AL_SOURCE_RELATIVE, AL_TRUE);
+	alSource3f(src, AL_POSITION, 0.0f, 0.0f, 0.0f);
+	alSource3f(src, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
 	//alSourcei(src, AL_LOOPING, samp->flags & CS_LOOP_NORMAL ? AL_TRUE : AL_FALSE);
 	alSourcePlay(src);
 	if (startpaused)
@@ -865,6 +874,8 @@ DLL_API signed char     F_API CS_3D_SetAttributes(int channel, const float *pos,
 	{
 		return 0;
 	}
+
+	alSourcei(sources[channel], AL_SOURCE_RELATIVE, AL_FALSE);
 
 	if (pos)
 	{
@@ -1082,6 +1093,9 @@ DLL_API int             F_API CS_PlaySoundEx(int channel, CS_SAMPLE *sptr, CS_DS
 	}
 
 	alSourcei(src, AL_BUFFER, samp->buf);
+	alSourcei(src, AL_SOURCE_RELATIVE, AL_TRUE);
+	alSource3f(src, AL_POSITION, 0.0f, 0.0f, 0.0f);
+	alSource3f(src, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
 	//alSourcei(src, AL_LOOPING, samp->flags & CS_LOOP_NORMAL ? AL_TRUE : AL_FALSE);
 	alSourcePlay(src);
 	if (startpaused)
