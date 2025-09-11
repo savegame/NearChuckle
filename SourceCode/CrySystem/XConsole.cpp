@@ -1126,7 +1126,7 @@ void CXConsole::DumpCommandsVars(char *prefix)
 	for(ConsoleVariablesMapItor itrVar = m_mapVariables.begin(); itrVar!=m_mapVariables.end(); ++itrVar)
 	{
 		ICVar *var = itrVar->second;
-		char *types[] = { "?", "int", "float", "string", "?" };
+		const char *types[] = { "?", "int", "float", "string", "?" };
 
 		if(hasprefix(var->GetName(), prefix)) 
 		{

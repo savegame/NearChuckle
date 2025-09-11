@@ -18,4 +18,4 @@ private:
 
 #define _GUARD_STACK(ls)  _StackGuard __guard__(ls);
 
-#endif _STACKGUARD_H_
+#endif //_STACKGUARD_H_
