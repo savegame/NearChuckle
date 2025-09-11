@@ -353,7 +353,7 @@ string& FormatPath( const string &sPath )
 #ifdef __linux
 	if (!strncmp(sLowerName, "levels/", strlen("levels/")))
 	{
-		corrected = alloca(strlen(sLowerName) + 3);
+		corrected = (char*)alloca(strlen(sLowerName) + 3);
         if (casepath(sLowerName, corrected))
         {
             strTemp = corrected;
