@@ -208,7 +208,9 @@ unsigned char CSDLKeyboard::XKEY2ASCII(unsigned short nCode, int modifiers)
 		HANDLE_CASE(XKEY_N, 'n')
 		HANDLE_CASE(XKEY_M, 'm')
 		HANDLE_CASE(XKEY_BACKSLASH, '\\')
+		HANDLE_CASE(XKEY_SLASH, '/')
 		HANDLE_CASE(XKEY_MINUS, '-')
+		HANDLE_CASE(XKEY_PERIOD, '.')
 	default:
 		ret = '\0';
 	}
