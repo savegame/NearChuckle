@@ -859,7 +859,7 @@ bool CScriptSystem::_ExecuteFile(const char *sFileName, bool bRaiseError)
 	pPak->FSeek(pFile, 0, SEEK_END); 
 	nSize = pPak->FTell(pFile); 
 	pPak->FSeek(pFile, 0, SEEK_SET); 
-	if (nSize==0)
+	if (nSize <= 0)
 	{
 		pPak->FClose(pFile); 
 		return (false);
