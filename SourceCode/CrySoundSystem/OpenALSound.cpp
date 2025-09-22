@@ -12,6 +12,10 @@
 
 #define MAX_SOUND_FILENAME 128
 
+#ifndef __linux
+#define __builtin_trap void
+#endif
+
 #if 0
 #define AL_LOG(...) printf(__VA_ARGS__);
 #else
@@ -354,7 +358,7 @@ DLL_API int             F_API CS_GetError()
 #endif
 DLL_API float           F_API CS_GetVersion()
 {
-	return 3.74f;
+	return CS_VERSION;
 }
 
 DLL_API int             F_API CS_GetOutput()
@@ -390,7 +394,12 @@ DLL_API const char *    F_API CS_GetDriverName(int id)
 {
 	if (id == 0)
 	{
+#ifndef LINUX64
+		return (signed char*)"OpenAL";
+#else
 		return "OpenAL";
+#endif
+		
 	}
 	return nullptr;
 }
@@ -445,12 +454,20 @@ DLL_API signed char     F_API CS_Stream_SetBufferSize(int ms)
 	return 0;
 }
 
+#ifndef LINUX64
+DLL_API CS_STREAM* F_API CS_Stream_Open(const char* name_or_data, unsigned int mode, int offset, int length);
+#endif
+
 DLL_API CS_STREAM* F_API CS_Stream_OpenFile(const char* filename, unsigned int mode, int memlength)
 {
-	return 0;
+	return CS_Stream_Open(filename, mode, 0, memlength);
 }
 
+#ifndef LINUX64
+static int audio_wav_from_data_FILE(unsigned int fp, int bufsize, ALuint* buf)
+#else
 static int audio_wav_from_data_FILE(FILE* fp, int bufsize, ALuint* buf)
+#endif
 {
 	ALenum ALformat;
 	char header[4], wave_header[4], subchunk1[4], subchunk2[4];
@@ -564,7 +581,11 @@ static int audio_ogg_from_data(unsigned char* p, int bufsize, ALuint* buf)
 
 DLL_API CS_STREAM*    F_API CS_Stream_Open(const char *name_or_data, unsigned int mode, int offset, int length)
 {
+#ifndef LINUX64
+	unsigned int file = my_fopen(name_or_data);
+#else
 	FILE *file = (FILE*)my_fopen(name_or_data);
+#endif
 	int len;
 	unsigned char* buf;
 	int ret;
@@ -1157,7 +1178,11 @@ DLL_API signed char     F_API CS_Sample_SetMaxPlaybacks(CS_SAMPLE *sptr, int max
 	return 0;
 }
 
-DLL_API signed char      CS_Reverb_SetProperties(const CS_REVERB_PROPERTIES *prop)
+#ifndef LINUX64
+DLL_API signed char   F_API   CS_Reverb_SetProperties(CS_REVERB_PROPERTIES *prop)
+#else
+DLL_API signed char   F_API   CS_Reverb_SetProperties(const CS_REVERB_PROPERTIES *prop)
+#endif
 {
 	return 0;
 }
