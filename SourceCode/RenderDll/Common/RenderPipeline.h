@@ -19,6 +19,13 @@ Copyright (c) 2001 Crytek Studios. All Rights Reserved.
 #define NUMRI_LISTS 6
 #define MAX_HWINST_PARAMS 16384
 
+static _inline int uint64_comp(uint64 a, uint64 b)
+{
+	if (a < b) return -1;
+	if (a > b) return 1;
+	return 0;
+}
+
 typedef union UnINT64
 {
   uint64 SortVal;
