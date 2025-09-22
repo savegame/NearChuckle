@@ -69,7 +69,7 @@
     <_ProjectFileVersion>17.0.33516.290</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>D:\Games\FC\Bin32\</OutDir>
+    <OutDir>C:\Games\FC\Bin32\</OutDir>
     <IntDir>Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
