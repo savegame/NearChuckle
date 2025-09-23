@@ -848,7 +848,7 @@ static char* InterceptZoomView(char *pBuffer, int* nSize)
 
 	position = fov90 - pBuffer;
 	extra_bytes = *nSize + (repl_len - replaced_len);
-	extra = new char[extra_bytes];
+	extra = new char[extra_bytes + 1];
 	strncpy(extra, pBuffer, position);
 	for (i = 0; i < repl_len; i++)
 	{
