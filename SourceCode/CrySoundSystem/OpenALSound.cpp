@@ -215,6 +215,7 @@ static int audio_wav_from_data_MEM(void* p, int bufsize, ALuint* buf)
 
 	if (strncmp(header, "RIFF", 4))
 	{
+		AL_LOG("Bad RIFF header\n");
 		return 1;
 	}
 
@@ -223,6 +224,7 @@ static int audio_wav_from_data_MEM(void* p, int bufsize, ALuint* buf)
 
 	if (strncmp(wave_header, "WAVE", 4))
 	{
+		AL_LOG("Bad WAVE header\n");
 		return 1;
 	}
 
@@ -230,6 +232,7 @@ static int audio_wav_from_data_MEM(void* p, int bufsize, ALuint* buf)
 
 	if (strncmp(subchunk1, "fmt", 3))
 	{
+		AL_LOG("Bad subchunk - expected \"fmt\", got %s\n", subchunk1);
 		return 1;
 	}
 
@@ -238,6 +241,7 @@ static int audio_wav_from_data_MEM(void* p, int bufsize, ALuint* buf)
 
 	if (format != 1)
 	{
+		AL_LOG("Format is %i, expected 1\n", format);
 		return 1;
 	}
 
@@ -258,6 +262,7 @@ static int audio_wav_from_data_MEM(void* p, int bufsize, ALuint* buf)
 			ALformat = num_channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
 		break;
 		default:
+			AL_LOG("bits_per_sample is %i, expected 8 for 16\n", bits_per_sample);
 			return 1;
 		break;
 	}
@@ -266,7 +271,15 @@ static int audio_wav_from_data_MEM(void* p, int bufsize, ALuint* buf)
 
 	if (strncmp(subchunk2, "data", 4))
 	{
-		return 1;
+		//Some sound effects like the vehicle mounted M249 have
+		//the data header 2 bytes after the expected offset
+		p = (char*)p - 2;
+		stream_read(&subchunk2, &p, sizeof(subchunk2));
+		if (strncmp(subchunk2, "data", 4))
+		{
+			AL_LOG("Subchunk 2 ID is %s, expected \"data\"\n", subchunk2);
+			return 1;
+		}
 	}
 
 	stream_read(&subchunk2size, &p, sizeof(subchunk2size));
