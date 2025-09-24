@@ -18,18 +18,18 @@ struct SMusicPatternFileInfo
 struct SWaveHdr
 {
 	char RIFF[4];									// "RIFF" tag
-	unsigned long dwSize;					// Size of data to follow
+	unsigned int dwSize;					// Size of data to follow
 	char WAVE[4];									// "WAVE" tag
 	char fmt_[4];									// "fmt " tag
-	unsigned long dw16;						// 16
+	unsigned int dw16;						// 16
 	unsigned short wOne_0;				// 1
 	unsigned short wChnls;				// Number of Channels
-	unsigned long dwSRate;				// Sample Rate
-	unsigned long BytesPerSec;		// Bytes per second
+	unsigned int dwSRate;				// Sample Rate
+	unsigned int BytesPerSec;		// Bytes per second
 	unsigned short wBlkAlign;			// Block align
 	unsigned short BitsPerSample; // Sample size
 	char DATA[4];									// "DATA"
-	unsigned long dwDSize;				// Number of Samples
+	unsigned int dwDSize;				// Number of Samples
 };
 
 enum EWaveFormatIDs
@@ -46,7 +46,7 @@ struct IMusicPatternDecoderInstance
 	//! Retrieve the current position in the file (in samples).
 	virtual int GetPos()=0;
 	//! Decode and retrieve pcm-data (stereo/16bit).
-	virtual bool GetPCMData(signed long *pDataOut, int nSamples, bool bLoop=true)=0;
+	virtual bool GetPCMData(signed int *pDataOut, int nSamples, bool bLoop=true)=0;
 };
 
 struct IMusicPatternDecoder

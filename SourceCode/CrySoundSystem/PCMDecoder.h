@@ -58,13 +58,13 @@ protected:
 	int			m_nPos;					// position in samples
 	int			m_nPosBytes;			// file position in bytes
 	bool		m_bCopyFromLastFrame;	// indicates some copying from last frame (due to odd sample count request)
-	signed long m_lLastSample;			// sample to reuse for next frame 
+	signed int m_lLastSample;			// sample to reuse for next frame
 private:
 	bool SeekBytes(int nBytes);
 protected:
 	unsigned int   m_aEncodedBlock[scuiEncodedBlockSize];			//static allocated encoded block, only needed for 22 kHz mode
 	//! fills a dest buffer with uncompressed data
-	const bool FillPCMBuffer22KHz(signed long *pBuffer, int nSamples);
+	const bool FillPCMBuffer22KHz(signed int *pBuffer, int nSamples);
 
 	virtual ~CPCMDecoderInstance();
 public:
@@ -75,5 +75,5 @@ public:
 	//! Retrieve the current position in the file (in samples)
 	int GetPos();
 	//! Decode and retrieve pcm-data (stereo/16bit).
-	bool GetPCMData(signed long *pDataOut, int nSamples, bool bLoop=true);
+	bool GetPCMData(signed int *pDataOut, int nSamples, bool bLoop=true);
 };

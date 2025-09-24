@@ -27,7 +27,7 @@ bool CMusicPatternInstance::Seek0(int nDelay)
 	return m_pDecoderInstance->Seek0(nDelay);
 }
 
-bool CMusicPatternInstance::GetPCMData(signed long *pDataOut, int nSamples, bool bLoop)
+bool CMusicPatternInstance::GetPCMData(signed int *pDataOut, int nSamples, bool bLoop)
 {
 	if (!m_pDecoderInstance)
 		return false;

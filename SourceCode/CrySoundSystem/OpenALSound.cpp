@@ -11,6 +11,7 @@
 #include "stb_vorbis.c"
 
 #define MAX_SOUND_FILENAME 128
+#define MIN_QUEUED_BUFFERS 20
 
 #ifndef __linux
 #define __builtin_trap void
@@ -33,12 +34,21 @@ ALCdevice* aldevice;
 ALCcontext* alcontext;
 #define MAX_SOURCES 10
 ALuint sources[MAX_SOURCES];
+ALuint* stream_source;
 std::vector<ALSample_t*> buffers;
 CS_OPENCALLBACK my_fopen;
 CS_CLOSECALLBACK my_fclose;
 CS_READCALLBACK my_fread;
 CS_SEEKCALLBACK my_fseek;
 CS_TELLCALLBACK my_ftell;
+CS_STREAMCALLBACK my_streamcb;
+char* musicBuffer;
+int musicBufferLen;
+#ifndef LINUX64
+int musicUserData;
+#else
+void *musicUserData;
+#endif
 
 #define SOURCE_OUT_OF_BOUNDS 0
 
@@ -83,6 +93,8 @@ DLL_API signed char     F_API CS_Init(int mixrate, int maxsoftwarechannels, unsi
 	alcontext = alcCreateContext(aldevice, 0);
 	alcMakeContextCurrent(alcontext);
 	alGenSources(MAX_SOURCES, sources);
+	my_streamcb = NULL;
+	musicUserData = NULL;
 	return 1;
 }
 
@@ -146,6 +158,11 @@ DLL_API signed char     F_API CS_SetVolume(int channel, int vol)
 {
 	if (channel < 0 || channel >= MAX_SOURCES)
 	{
+		if (channel == MAX_SOURCES)
+		{
+			alSourcef(*stream_source, AL_GAIN, (float)vol / 255.0f);
+			return 1;
+		}
 		__builtin_trap();
 		return SOURCE_OUT_OF_BOUNDS;
 	}
@@ -622,18 +639,42 @@ DLL_API CS_STREAM* F_API CS_Stream_Create(CS_STREAMCALLBACK callback, int length
 DLL_API CS_STREAM* F_API CS_Stream_Create(CS_STREAMCALLBACK callback, int length, unsigned int mode, int samplerate, void *userdata)
 #endif
 {
-	return 0;
+	stream_source = new ALuint;
+	alGenSources(1, stream_source);
+	musicBuffer = new char[length];
+	musicBufferLen = length;
+	my_streamcb = callback;
+	musicUserData = userdata;
+
+	return (CS_STREAM*)stream_source;
 }
 
 DLL_API signed char     F_API CS_Stream_Close(CS_STREAM* stream)
 {
-	__builtin_trap();
-	return 0;
+	ALuint* src = (ALuint*)stream;
+	alDeleteSources(1, src);
+	delete src;
+	delete [] musicBuffer;
+	musicBufferLen = 0;
+	return 1;
 }
 
 DLL_API int             F_API CS_Stream_Play(int channel, CS_STREAM* stream)
 {
-	return -1;
+	ALuint src;
+	if (channel != CS_FREE)
+	{
+		__builtin_trap();
+		return -1;
+	}
+
+	src = *stream_source;
+	alSourcei(src, AL_SOURCE_RELATIVE, AL_TRUE);
+	alSource3f(src, AL_POSITION, 0.0f, 0.0f, 0.0f);
+	alSource3f(src, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+	alSourcePlay(src);
+
+	return MAX_SOURCES;
 }
 
 DLL_API int             F_API CS_Stream_PlayEx(int channel, CS_STREAM* stream, CS_DSPUNIT* dsp, signed char startpaused)
@@ -678,7 +719,25 @@ DLL_API signed char     F_API CS_Stream_Stop(CS_STREAM* stream)
 {
 	size_t i;
 	ALint buffer;
-	ALSample_t* samp = (ALSample_t*)stream;
+	ALSample_t* samp;
+	int num_buffers;
+
+	if (stream_source == (ALuint*)stream)
+	{
+		alSourceStop(*stream_source);
+		alGetSourcei(*stream_source, AL_BUFFERS_QUEUED, &num_buffers);
+
+		for (i = 0; i < num_buffers; i++)
+		{
+			alSourceUnqueueBuffers(*stream_source, 1, (ALuint*)&buffer);
+			alDeleteBuffers(1, (ALuint*)&buffer);
+		}
+
+		return 1;
+	}
+
+	samp = (ALSample_t*)stream;
+
 	for (i = 0; i < MAX_SOURCES; i++)
 	{
 		alGetSourcei(sources[i], AL_BUFFER, &buffer);
@@ -775,7 +834,41 @@ DLL_API signed char     F_API CS_FX_SetWavesReverb(int fxid, float InGain, float
 
 DLL_API void            F_API CS_Update()
 {
+	ALenum state;
+	ALuint buffer, stream_buf;
+	int i;
+	int num_processed_buffers = 0;
+	int num_queued_buffers = 0;
+	alGetSourcei(*stream_source, AL_SOURCE_STATE, &state);
+	alGetSourcei(*stream_source, AL_BUFFERS_PROCESSED, &num_processed_buffers);
 
+	for (i = 0; i < num_processed_buffers; i++)
+	{
+		alSourceUnqueueBuffers(*stream_source, 1, &buffer);
+		alDeleteBuffers(1, &buffer);
+	}
+
+	alGetSourcei(*stream_source, AL_BUFFERS_QUEUED, &num_queued_buffers);
+
+	if (num_queued_buffers < MIN_QUEUED_BUFFERS)
+	{
+		if (my_streamcb)
+		{
+			my_streamcb((CS_STREAM*)stream_source, musicBuffer,
+				musicBufferLen, musicUserData);
+
+			alGenBuffers(1, &stream_buf);
+			alBufferData(stream_buf, AL_FORMAT_STEREO16,
+				(ALvoid *)musicBuffer, musicBufferLen, 44100);
+			alSourceQueueBuffers(*stream_source, 1, &stream_buf);
+			alGetSourcei(*stream_source, AL_BUFFERS_QUEUED, &num_queued_buffers);
+
+			if (state != AL_PLAYING)
+			{
+				alSourcePlay(*stream_source);
+			}
+		}
+	}
 }
 
 DLL_API void            F_API CS_SetSpeakerMode(unsigned int speakermode)

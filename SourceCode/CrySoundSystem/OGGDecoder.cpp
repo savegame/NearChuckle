@@ -186,7 +186,7 @@ int COGGDecoderInstance::GetPos()
 	return m_nPos;
 }
 
-bool COGGDecoderInstance::GetPCMData(signed long *pDataOut, int nSamples, bool bLoop)
+bool COGGDecoderInstance::GetPCMData(signed int *pDataOut, int nSamples, bool bLoop)
 {
 	if (!m_pDecoder->m_FileAccess.pFile)
 		return false;
@@ -234,7 +234,7 @@ bool COGGDecoderInstance::GetPCMData(signed long *pDataOut, int nSamples, bool b
 	return true;
 }
 
-bool COGGDecoderInstance::FillPCMBuffer(signed long *pBuffer, int nSamples)
+bool COGGDecoderInstance::FillPCMBuffer(signed int *pBuffer, int nSamples)
 {
 	int nBytesToRead=nSamples*m_pDecoder->m_pMusicSystem->GetBytesPerSample();
 	int nBytesRead=0;

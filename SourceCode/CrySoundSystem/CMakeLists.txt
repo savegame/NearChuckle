@@ -23,6 +23,7 @@ set(SRC_FILES
     ${SRC_FILES}
     "OpenALSound.cpp"
 )
+add_definitions(-DUSE_OPENAL)
 endif()
 
 add_library(${PROJECT_NAME} SHARED ${SRC_FILES})

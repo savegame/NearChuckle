@@ -311,7 +311,7 @@ const bool CADPCMDecoderInstance::InitStreamWAV()
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CADPCMDecoderInstance::GetPCMData(signed long *pDataOut, int nSamples, bool bLoop)
+bool CADPCMDecoderInstance::GetPCMData(signed int *pDataOut, int nSamples, bool bLoop)
 {
 	//prevent any asynchonisation in terms of file opening
  	if (!m_pFile || !m_bInitialized)
@@ -404,7 +404,7 @@ inline unsigned short CADPCMDecoderInstance::AdpcmReadBlock(short* pDest)
     return( samplesThisBlock );
 }
 
-const bool CADPCMDecoderInstance::FillPCMBuffer(signed long *pBuffer, int nSamples)
+const bool CADPCMDecoderInstance::FillPCMBuffer(signed int *pBuffer, int nSamples)
 {
 	//since there get always complete blocks read, fill buffer with already compressed samples
 	const unsigned int cuiModulo = m_nPos % m_uiCurrentSamplesPerBlock;
@@ -414,7 +414,7 @@ const bool CADPCMDecoderInstance::FillPCMBuffer(signed long *pBuffer, int nSampl
 		if(uiLeft != 0)//read as many sampels as left decompressed and not more than requested
 		{
 			//copy decompressed data
-			signed long *pslDecompressed = reinterpret_cast<signed long*>(m_aDecodedBlock) + cuiModulo;
+			signed int *pslDecompressed = reinterpret_cast<signed int*>(m_aDecodedBlock) + cuiModulo;
 			for(unsigned int i=0; i<uiLeft;i++)
 			{
 				*pBuffer++ = *pslDecompressed++;
@@ -448,8 +448,8 @@ const bool CADPCMDecoderInstance::FillPCMBuffer(signed long *pBuffer, int nSampl
 					memset(m_aDecodedBlock + uiReadSamples * 2/*stereo*/, 0, m_uiCurrentSamplesPerBlock - uiReadSamples);
 				}
 				//read requested samples
-				pBuffer = reinterpret_cast<signed long*>(pCurrentDest);
-				signed long *pDecoded = reinterpret_cast<signed long*>(m_aDecodedBlock);
+				pBuffer = reinterpret_cast<signed int*>(pCurrentDest);
+				signed int *pDecoded = reinterpret_cast<signed int*>(m_aDecodedBlock);
 				//if for bad reason not enough samples have been read, it will get automatically filled with 0's
 				for(int i=0; i<nSamples;i++)
 				{
@@ -462,7 +462,7 @@ const bool CADPCMDecoderInstance::FillPCMBuffer(signed long *pBuffer, int nSampl
 	return true;
 }
 
-const bool CADPCMDecoderInstance::FillPCMBuffer22KHz(signed long *pBuffer, int nSamples)
+const bool CADPCMDecoderInstance::FillPCMBuffer22KHz(signed int *pBuffer, int nSamples)
 {
 	unsigned uStartPos = (m_nPos/2/*22KHz*/);
 	//first check for copying some data from last frame (if not at starting position)
@@ -479,7 +479,7 @@ const bool CADPCMDecoderInstance::FillPCMBuffer22KHz(signed long *pBuffer, int n
 	if(cuiModulo != 0 && m_iFilePos > 0)//to not let break anything 
 	{	//we are not on a block boundary
 		uiLeft = crymin((unsigned int)nSamples/2, (m_uiCurrentSamplesPerBlock - cuiModulo));/*22KHz*/
-		signed long *pslDecompressed = reinterpret_cast<signed long*>(m_aDecodedBlock) + cuiModulo;
+		signed int *pslDecompressed = reinterpret_cast<signed int*>(m_aDecodedBlock) + cuiModulo;
 		if(uiLeft != 0)//read as many sampels as left decompressed and not more than requested
 		{
 			//copy decompressed data
@@ -514,8 +514,8 @@ const bool CADPCMDecoderInstance::FillPCMBuffer22KHz(signed long *pBuffer, int n
 					memset(pBuffer, 0, nSamples*4);//fill with 0's
 					return false;
 				}
-				pBuffer = reinterpret_cast<signed long*>(pCurrentDest);
-				signed long *pDecoded = reinterpret_cast<signed long*>(m_aDecodedBlock);
+				pBuffer = reinterpret_cast<signed int*>(pCurrentDest);
+				signed int *pDecoded = reinterpret_cast<signed int*>(m_aDecodedBlock);
 				//if for bad reason not enough samples have been read, it will get automatically filled with 0's
 				for(unsigned int i=0; i<m_uiCurrentSamplesPerBlock;i++)
 				{
@@ -535,8 +535,8 @@ const bool CADPCMDecoderInstance::FillPCMBuffer22KHz(signed long *pBuffer, int n
 					memset(m_aDecodedBlock + uiReadSamples * 2/*stereo*/, 0, m_uiCurrentSamplesPerBlock - uiReadSamples);
 				}
 				//read requested samples
-				pBuffer = reinterpret_cast<signed long*>(pCurrentDest);
-				signed long *pDecoded = reinterpret_cast<signed long*>(m_aDecodedBlock);
+				pBuffer = reinterpret_cast<signed int*>(pCurrentDest);
+				signed int *pDecoded = reinterpret_cast<signed int*>(m_aDecodedBlock);
 				//if for some bad reason not enough samples have been read, it will get automatically filled with 0's
 				for(int i=0; i<nSamples/2;i++)
 				{
