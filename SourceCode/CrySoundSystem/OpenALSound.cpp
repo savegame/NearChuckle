@@ -476,89 +476,6 @@ DLL_API CS_STREAM* F_API CS_Stream_OpenFile(const char* filename, unsigned int m
 	return CS_Stream_Open(filename, mode, 0, memlength);
 }
 
-#ifndef LINUX64
-static int audio_wav_from_data_FILE(unsigned int fp, int bufsize, ALuint* buf)
-#else
-static int audio_wav_from_data_FILE(FILE* fp, int bufsize, ALuint* buf)
-#endif
-{
-	ALenum ALformat;
-	char header[4], wave_header[4], subchunk1[4], subchunk2[4];
-	char* temp_buffer;
-	unsigned int size, frequency, subchunk2size, unused_int;
-	unsigned short num_channels, bits_per_sample, format, unused_short;
-	*buf = 0;
-
-	my_fread(&header, sizeof(header), fp);
-
-	if (strncmp(header, "RIFF", 4))
-	{
-		return 1;
-	}
-
-	my_fread(&size, sizeof(size), fp);
-	my_fread(&wave_header, sizeof(wave_header), fp);
-
-	if (strncmp(wave_header, "WAVE", 4))
-	{
-		return 1;
-	}
-
-	my_fread(&subchunk1, sizeof(subchunk1), fp);
-
-	if (strncmp(subchunk1, "fmt", 3))
-	{
-		return 1;
-	}
-
-	my_fread(&unused_int, sizeof(unused_int), fp); //subchunk 1 size
-	my_fread(&format, sizeof(format), fp);
-
-	if (format != 1)
-	{
-		return 2;
-	}
-
-	my_fread(&num_channels, sizeof(num_channels), fp);
-	my_fread(&frequency, sizeof(frequency), fp);
-
-	my_fread(&unused_int, sizeof(unused_int), fp); //ByteRate
-	my_fread(&unused_short, sizeof(unused_short), fp); //BlockAlign
-
-	my_fread(&bits_per_sample, sizeof(bits_per_sample), fp);
-
-	switch (bits_per_sample)
-	{
-		case 8:
-			ALformat = num_channels == 2 ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
-		break;
-		case 16:
-			ALformat = num_channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
-		break;
-		default:
-			return 1;
-		break;
-	}
-
-	my_fread(&subchunk2, sizeof(subchunk2), fp);
-
-	if (strncmp(subchunk2, "data", 4))
-	{
-		return 1;
-	}
-
-	my_fread(&subchunk2size, sizeof(subchunk2size), fp);
-
-	temp_buffer = new char[subchunk2size];
-
-	my_fread(temp_buffer, subchunk2size, fp);
-
-	alGenBuffers(1, buf);
-	alBufferData(*buf, ALformat, temp_buffer, subchunk2size, frequency);
-	delete [] temp_buffer;
-	return 0;
-}
-
 static int audio_ogg_from_data(unsigned char* p, int bufsize, ALuint* buf)
 {
 	ALshort* ogg_buffer;
@@ -661,8 +578,15 @@ DLL_API CS_STREAM*    F_API CS_Stream_Open(const char *name_or_data, unsigned in
 	{
 		if (file)
 		{
-			ret = audio_wav_from_data_FILE(file, 0, &thebuf);
+			my_fseek(file, 0, SEEK_END);
+			len = my_ftell(file);
+			
+			buf = new unsigned char[len];
+			my_fseek(file, 0, SEEK_SET);
+			my_fread(buf, len, file);
 			my_fclose(file);
+			
+			ret = audio_wav_from_data_MEM(buf, len, &thebuf);
 			if (ret == 0)
 			{
 				samp = new ALSample_t;
