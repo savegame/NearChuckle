@@ -116,6 +116,10 @@ void CSDLMouse::Update(bool bPrevFocus)
 			mouseDelta[0] += float((int)event.motion.xrel);
 			mouseDelta[1] += float((int)event.motion.yrel);
 		}
+		else if (event.type == SDL_TEXTINPUT)
+		{
+			//ignore
+		}
 		else
 		{
 			events.push_back(event);

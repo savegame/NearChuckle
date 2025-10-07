@@ -462,6 +462,10 @@ void CSDLKeyboard::Update()
 				ProcessKey(xkey, false, m_cTempKeys);
 			}
 		}
+		else if (event.type == SDL_TEXTINPUT)
+		{
+			//ignore
+		}
 		else
 		{
 			events.push_back(event);
