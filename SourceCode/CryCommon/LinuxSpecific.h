@@ -397,7 +397,7 @@ typedef void* HINSTANCE;
 inline int casepath(char const *path, char *r)
 {
     size_t l = strlen(path);
-    char *p = alloca(l + 1);
+    char *p = (char*)alloca(l + 1);
     strcpy(p, path);
     size_t rl = 0;
     
