@@ -336,9 +336,6 @@ string& FormatPath( const string &sPath )
 	static char sLowerName[300];
 	strcpy(sLowerName, sPath.c_str());
 	int i = 0;
-#ifdef __linux
-	char* corrected;
-#endif
 	while (sLowerName[i] != 0)
 	{
 		if (sLowerName[i] == '\\')
@@ -350,17 +347,6 @@ string& FormatPath( const string &sPath )
 		}
 		i++;
 	}
-#ifdef __linux
-	if (!strncmp(sLowerName, "levels/", strlen("levels/")))
-	{
-		corrected = (char*)alloca(strlen(sLowerName) + 3);
-        if (casepath(sLowerName, corrected))
-        {
-            strTemp = corrected;
-			return strTemp;
-        }
-	}
-#endif
 	strTemp = sLowerName;
 	return strTemp;
 }
@@ -844,6 +830,44 @@ IScriptObject* CScriptSystem::CreateGlobalObject(const char *sName)
 		return pObj;
 }
 
+//Replaced hardcoded FOV of 90 with new CVar
+static char* InterceptZoomView(char *pBuffer, int* nSize)
+{
+	size_t i, j, extra_bytes, remaining;
+	size_t position;
+	char* ptr, *extra;
+	const char* repl = "game_fov";
+	const size_t repl_len = strlen(repl);
+	const size_t replaced_len = strlen("90");
+	char* fov90 = strstr(pBuffer, "90");
+
+	if (!fov90)
+	{
+		return NULL;
+	}
+
+	position = fov90 - pBuffer;
+	extra_bytes = *nSize + (repl_len - replaced_len);
+	extra = new char[extra_bytes + 1];
+	strncpy(extra, pBuffer, position);
+	for (i = 0; i < repl_len; i++)
+	{
+		extra[position + i] = repl[i];
+	}
+
+	ptr = fov90 + replaced_len;
+	remaining = (*nSize - position) - replaced_len;
+	for (j = 0; j < remaining; j++)
+	{
+		extra[position + i + j] = *ptr;
+		ptr++;
+	}
+	extra[extra_bytes] = '\0';
+
+	*nSize = extra_bytes;
+	return extra;
+}
+
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 bool CScriptSystem::_ExecuteFile(const char *sFileName, bool bRaiseError)
@@ -873,7 +897,7 @@ bool CScriptSystem::_ExecuteFile(const char *sFileName, bool bRaiseError)
 	pPak->FSeek(pFile, 0, SEEK_END); 
 	nSize = pPak->FTell(pFile); 
 	pPak->FSeek(pFile, 0, SEEK_SET); 
-	if (nSize==0)
+	if (nSize <= 0)
 	{
 		pPak->FClose(pFile); 
 		return (false);
@@ -930,6 +954,16 @@ bool CScriptSystem::_ExecuteFile(const char *sFileName, bool bRaiseError)
 	if (m_bDebug && m_pDebugSink)
 	{
 		m_pDebugSink->OnLoadSource(sFileName,(unsigned char*) pBuffer, nSize);		
+	}
+
+	if (strstr(sFileName, "zoomview"))
+	{
+		char* newBuf = InterceptZoomView(pBuffer, &nSize);
+		if (newBuf != NULL)
+		{
+			delete [] pBuffer;
+			pBuffer = newBuf;
+		}
 	}
 			
 	//int nRes = lua_dofile(m_pLS, sFileName);

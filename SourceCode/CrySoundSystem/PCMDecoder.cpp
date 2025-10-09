@@ -164,7 +164,7 @@ int CPCMDecoderInstance::GetPos()
 	return m_nPos;
 }
 
-bool CPCMDecoderInstance::GetPCMData(signed long *pDataOut, int nSamples, bool bLoop)
+bool CPCMDecoderInstance::GetPCMData(signed int *pDataOut, int nSamples, bool bLoop)
 {
 	if (!m_pDecoder->m_pFile)
 		return false;
@@ -221,7 +221,7 @@ bool CPCMDecoderInstance::GetPCMData(signed long *pDataOut, int nSamples, bool b
 }
 
 	//! fills a dest buffer with uncompressed data
-const bool CPCMDecoderInstance::FillPCMBuffer22KHz(signed long *pBuffer, int nSamples)
+const bool CPCMDecoderInstance::FillPCMBuffer22KHz(signed int *pBuffer, int nSamples)
 {
 	//first check for copying some data from last frame (if not at starting position)
 	if(m_bCopyFromLastFrame && m_nPos != 0)
@@ -237,7 +237,7 @@ const bool CPCMDecoderInstance::FillPCMBuffer22KHz(signed long *pBuffer, int nSa
 		if (!m_pDecoder->ReadFile(m_aEncodedBlock, m_pDecoder->m_PCMFileInfo.nBytesPerSample, cuiSamplesPerBlock, &m_nPosBytes))
 			return false;
 		//now double up interleaved samples
-		const signed long *pEncodedData = reinterpret_cast<signed long*>(&m_aEncodedBlock[0]);
+		const signed int *pEncodedData = reinterpret_cast<signed int*>(&m_aEncodedBlock[0]);
 		for(unsigned int j=0; j<cuiSamplesPerBlock;j++)
 		{
 			*pBuffer++ = *pEncodedData;		//double up samples
@@ -254,7 +254,7 @@ const bool CPCMDecoderInstance::FillPCMBuffer22KHz(signed long *pBuffer, int nSa
 			//read one sample more
 			if (!m_pDecoder->ReadFile(m_aEncodedBlock, m_pDecoder->m_PCMFileInfo.nBytesPerSample, (nSamples/2)+1, &m_nPosBytes))
 				return false;
-			const signed long *pEncodedData = reinterpret_cast<signed long*>(&m_aEncodedBlock[0]);
+			const signed int *pEncodedData = reinterpret_cast<signed int*>(&m_aEncodedBlock[0]);
 			for(int j=0; j<nSamples/2;j++)
 			{
 				*pBuffer++ = *pEncodedData;		//double up samples
@@ -268,7 +268,7 @@ const bool CPCMDecoderInstance::FillPCMBuffer22KHz(signed long *pBuffer, int nSa
 			m_bCopyFromLastFrame = false;
 			if (!m_pDecoder->ReadFile(m_aEncodedBlock, m_pDecoder->m_PCMFileInfo.nBytesPerSample, (nSamples/2), &m_nPosBytes))
 				return false;
-			const signed long *pEncodedData = reinterpret_cast<signed long*>(&m_aEncodedBlock[0]);
+			const signed int *pEncodedData = reinterpret_cast<signed int*>(&m_aEncodedBlock[0]);
 			for(int j=0; j<nSamples/2;j++)
 			{
 				*pBuffer++ = *pEncodedData;		//double up samples

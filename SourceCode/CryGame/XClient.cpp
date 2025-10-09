@@ -1521,6 +1521,8 @@ void CXClient::SetPlayerID( EntityId wPlayerID )
 {
 	m_wPlayerID=wPlayerID;
 	IEntity *pPlayer = 0;
+	ICVar* pCVarFOV;
+	IEntityCamera* pCam;
 	
 	if(m_pISystem)
 		pPlayer=m_pISystem->GetEntity(wPlayerID);
@@ -1531,7 +1533,17 @@ void CXClient::SetPlayerID( EntityId wPlayerID )
 		m_pScriptSystem->SetGlobalToNull("_localplayer");
 
 	if(pPlayer)
+	{
 		m_pGame->SetCurrentUI(m_pGame->m_pUIHud);
+		pCVarFOV = GetISystem()->GetIConsole()->GetCVar("game_fov");
+		if (pCVarFOV)
+		{
+			pCam = pPlayer->GetCamera();
+			pCam->SetFov((pCVarFOV->GetFVal() * 3.14159f) / 180.0f,
+				m_pGame->GetSystem()->GetIRenderer()->GetWidth(),
+				m_pGame->GetSystem()->GetIRenderer()->GetHeight());
+		}
+	}
 }
 
 ///////////////////////////////////////////////

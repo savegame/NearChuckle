@@ -1055,7 +1055,7 @@ signed char CMusicSystem::StreamingCallback(CS_STREAM *pStream, void *pBuffer, i
 		if (nSamplesToFade<=nSamples)	// is the fade-point in this block ?
 		{
 			// ...yes
-			m_pCurrPattern->GetPCMData((signed long*)&(pOutput[nOfs]), nSamplesToFade);	// get pcm data from the current pattern, till we reach the fadepoint
+			m_pCurrPattern->GetPCMData((signed int*)&(pOutput[nOfs]), nSamplesToFade);	// get pcm data from the current pattern, till we reach the fadepoint
 			MixStreams(&(pOutput[nOfs]), nSamplesToFade);	// also mix all queued patterns to the fadepoint
 			// if the old stream is not at the end yet we push it in the PlayingStreams-list so it gets played and faded...
 //			if (m_pCurrPattern->GetSamplesToEnd()>0)
@@ -1104,7 +1104,7 @@ signed char CMusicSystem::StreamingCallback(CS_STREAM *pStream, void *pBuffer, i
 		}else
 		{
 			// no fadepoint in this block so we can use the current patterns without any hassle
-			m_pCurrPattern->GetPCMData((signed long*)&(pOutput[nOfs]), nSamples);	// get pcm data
+			m_pCurrPattern->GetPCMData((signed int*)&(pOutput[nOfs]), nSamples);	// get pcm data
 			MixStreams(&(pOutput[nOfs]), nSamples);	// mix queued patterns
 			break;
 		}
@@ -1130,6 +1130,67 @@ void CMusicSystem::AdjustMixStreamsRefCount(int nSamples)
 	}
 }
 
+#ifdef USE_OPENAL
+//Taken from https://github.com/SoapyMan/CE1
+struct int16stereo
+{
+	int16 l;
+	int16 r;
+};
+using f32stereo = Vec2;
+
+template<typename T2>
+float sampleValueMono(const T2 src) { return src; }
+
+template<typename T> T lerp(const T u, const T v, const float x) { return u + (v - u) * x; }
+
+template<typename T2>
+f32stereo sampleValueStereo(const T2 src) { return { sampleValueMono(src.l), sampleValueMono(src.r) }; }
+
+template<typename _OUT>
+void mixSample(const float in, const float sampleFrac, _OUT& out);
+
+template<typename _OUT>
+void mixSample(const f32stereo in, const float sampleFrac, _OUT& out);
+
+template <class T> T clamp(T X, T Min, T Max) { return X < Min ? Min : X < Max ? X : Max; }
+
+template<>
+void mixSample(const float in, const float sampleFrac, int16& out)
+{
+	const int result = (((32767  - out) * in) / 32767 ) + out;
+	out = clamp(result, -32768 , 32767 );
+}
+
+template<>
+void mixSample(const f32stereo in, const float sampleFrac, int16stereo& out)
+{
+	mixSample(in.x, sampleFrac, out.l);
+	mixSample(in.y, sampleFrac, out.r);
+}
+
+template<typename _OUT, typename _IN>
+int MixSamplesStereo(const _IN* in, int numInSamples, _OUT* out, int numOutSamples, float volume)
+{
+	float samplePos = 0.0f;
+	int i = 0;
+	for (; i < numOutSamples && samplePos < numInSamples; ++i)
+	{
+		const int srcSamplePos = cry_floorf(samplePos);
+		const float sampleFrac = samplePos - cry_floorf(samplePos);
+
+		const f32stereo srcValA = sampleValueStereo(in[srcSamplePos]);
+		const f32stereo srcValB = sampleValueStereo(in[crymin(numInSamples - 1, srcSamplePos + 1)]);
+		const f32stereo sourceVal = lerp(srcValA, srcValB, sampleFrac) * volume;
+
+		mixSample(sourceVal, sampleFrac, out[i]);
+
+		samplePos += 1.0f;
+	}
+
+	return i + 1;
+}
+#endif
 /* mix all streams in the play-list into pBuffer; mixlength is nSamples
 	the data is processed before mixing if needed (eg. ramping)
 */
@@ -1159,7 +1220,7 @@ void CMusicSystem::MixStreams(void *pBuffer, int nSamples)
 					break;
 				}
 			}
-			PlayInfo.pPatternInstance->GetPCMData((signed long*)m_pMixBuffer, nSamplesToRead);
+			PlayInfo.pPatternInstance->GetPCMData((signed int*)m_pMixBuffer, nSamplesToRead);
       
 			switch (PlayInfo.eBlendType)
 			{
@@ -1175,7 +1236,13 @@ void CMusicSystem::MixStreams(void *pBuffer, int nSamples)
 			//memset (arrBuffer, 0xCE, sizeof(arrBuffer));
       //memcpy (pBuffer, m_pMixBuffer, nSamplesToRead*4);
       //memset(pBuffer, 0, nSamplesToRead*4);
+#ifndef USE_OPENAL
 			CS_DSP_MixBuffers(pBuffer, m_pMixBuffer, nSamplesToRead, m_nSampleRate, PlayInfo.pPatternInstance->GetPattern()->GetLayeringVolume(), 128, CS_16BITS | CS_STEREO);
+#else
+			MixSamplesStereo(reinterpret_cast<const int16stereo*>(m_pMixBuffer),
+				nSamplesToRead, reinterpret_cast<int16stereo*>(pBuffer), nSamples,
+				(float)PlayInfo.pPatternInstance->GetPattern()->GetLayeringVolume() / 1000.0f);
+#endif
 /*
   signed short *destptr = (signed short *)pBuffer;
 	signed int *srcptr = (signed int *)pBuffer;

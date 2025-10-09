@@ -11,14 +11,14 @@ struct	ICryPak;
 typedef struct SADPCMWaveHdr
 {
 	char RIFF[4];							// "RIFF" tag, identifies it as WAV
-	unsigned long dwSize;					// Size of data to follow (filesize-8)
+	unsigned int dwSize;					// Size of data to follow (filesize-8)
 	char WAVE[4];							// "WAVE" tag
 	char fmt_[4];							// "fmt " tag
-	unsigned long  dw16;					// 16
+	unsigned int dw16;						// 16
 	unsigned short FormatTag;				// should be WAVE_FORMAT_ADPCM=2
 	unsigned short wChnls;					// Number of Channels (1 for mono, 2 for stereo), should be always 2
-	unsigned long  dwSRate;					// Sample Rate
-	unsigned long  BytesPerSec;				// Bytes per second
+	unsigned int dwSRate;					// Sample Rate
+	unsigned int BytesPerSec;				// Bytes per second
 	unsigned short wBlkAlign;				// Block align,  usually 2048
 	unsigned short BitsPerSample;			// Bits Per Sample, usually 4
 	unsigned short wExtSize;				// not important
@@ -68,7 +68,7 @@ protected:
 	bool m_b44KHz;	//keeps track of encoded frequency
 
 	//! decode function for one sample, called exclusively by AdpcmBlockExpandI
-	static int CADPCMDecoder::AdpcmDecode( int c, MsState& rState, int sample1, int sample2 );	
+	static int AdpcmDecode( int c, MsState& rState, int sample1, int sample2 );
 	void SetFileInfo(const unsigned int cuiSampleCount, const bool cbIs44KHz = true);
 
 	virtual ~CADPCMDecoder();
@@ -98,7 +98,7 @@ public:
 	//! Retrieve the current position in the file (in samples)
 	int GetPos();
 	//! Decode and retrieve pcm-data (stereo/16bit).
-	bool GetPCMData(signed long *pDataOut, int nSamples, bool bLoop=true);
+	bool GetPCMData(signed int *pDataOut, int nSamples, bool bLoop=true);
 	//! closes all
 	void Close();
 	//! retrieves number of total contained samples
@@ -111,7 +111,7 @@ protected:
 	int				m_iFilePos;				// current file pos corresponding to right file seek pos (counted from m_uiDataStartPos)
 	bool			m_bInitialized;			// functionality not available if false
 	bool			m_bCopyFromLastFrame;	// indicates some copying from last frame (due to odd sample count request)
-	signed long		m_lLastSample;			// sample to reuse for next frame 
+	signed int		m_lLastSample;			// sample to reuse for next frame
 
 	unsigned int	m_uiCurrentBlockSize;	// block size in file, always less than static allocated buffer
 	unsigned int	m_uiCurrentSamplesPerBlock;// sampels per block in file(usually m_uiCurrentBlockSize-12), always less than static allocated buffer
@@ -129,9 +129,9 @@ protected:
 
 protected:
 	//! fills a dest buffer with uncompressed data
-	const bool FillPCMBuffer(signed long *pBuffer, int nSamples);
+	const bool FillPCMBuffer(signed int *pBuffer, int nSamples);
 	//! fills a dest buffer from 22KHz compressed data
-	const bool FillPCMBuffer22KHz(signed long *pBuffer, int nSamples);
+	const bool FillPCMBuffer22KHz(signed int *pBuffer, int nSamples);
 
 	const bool InitStreamWAV();					// for now has every instance its own file handle
 	unsigned short AdpcmReadBlock(short* pDest = NULL);		// decoded one block, if dest not specified, default static buffer is chosen

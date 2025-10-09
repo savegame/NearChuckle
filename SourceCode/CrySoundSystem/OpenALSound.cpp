@@ -11,6 +11,17 @@
 #include "stb_vorbis.c"
 
 #define MAX_SOUND_FILENAME 128
+#define MIN_QUEUED_BUFFERS 20
+
+#ifndef __linux
+#define __builtin_trap void
+#endif
+
+#if 0
+#define AL_LOG(...) printf(__VA_ARGS__);
+#else
+#define AL_LOG
+#endif
 
 typedef struct
 {
@@ -23,12 +34,21 @@ ALCdevice* aldevice;
 ALCcontext* alcontext;
 #define MAX_SOURCES 10
 ALuint sources[MAX_SOURCES];
+ALuint* stream_source;
 std::vector<ALSample_t*> buffers;
 CS_OPENCALLBACK my_fopen;
 CS_CLOSECALLBACK my_fclose;
 CS_READCALLBACK my_fread;
 CS_SEEKCALLBACK my_fseek;
 CS_TELLCALLBACK my_ftell;
+CS_STREAMCALLBACK my_streamcb;
+char* musicBuffer;
+int musicBufferLen;
+#ifndef LINUX64
+int musicUserData;
+#else
+void *musicUserData;
+#endif
 
 #define SOURCE_OUT_OF_BOUNDS 0
 
@@ -73,12 +93,14 @@ DLL_API signed char     F_API CS_Init(int mixrate, int maxsoftwarechannels, unsi
 	alcontext = alcCreateContext(aldevice, 0);
 	alcMakeContextCurrent(alcontext);
 	alGenSources(MAX_SOURCES, sources);
+	my_streamcb = NULL;
+	musicUserData = NULL;
 	return 1;
 }
 
 DLL_API void            F_API CS_Close()
 {
-	printf("OpenAL: Deleting %lu buffers.\n", buffers.size());
+	AL_LOG("OpenAL: Deleting %lu buffers.\n", buffers.size());
 	for (size_t i = 0; i < buffers.size(); i++)
 	{
 		alDeleteBuffers(1, &buffers[i]->buf);
@@ -136,6 +158,11 @@ DLL_API signed char     F_API CS_SetVolume(int channel, int vol)
 {
 	if (channel < 0 || channel >= MAX_SOURCES)
 	{
+		if (channel == MAX_SOURCES)
+		{
+			alSourcef(*stream_source, AL_GAIN, (float)vol / 255.0f);
+			return 1;
+		}
 		__builtin_trap();
 		return SOURCE_OUT_OF_BOUNDS;
 	}
@@ -205,6 +232,7 @@ static int audio_wav_from_data_MEM(void* p, int bufsize, ALuint* buf)
 
 	if (strncmp(header, "RIFF", 4))
 	{
+		AL_LOG("Bad RIFF header\n");
 		return 1;
 	}
 
@@ -213,6 +241,7 @@ static int audio_wav_from_data_MEM(void* p, int bufsize, ALuint* buf)
 
 	if (strncmp(wave_header, "WAVE", 4))
 	{
+		AL_LOG("Bad WAVE header\n");
 		return 1;
 	}
 
@@ -220,6 +249,7 @@ static int audio_wav_from_data_MEM(void* p, int bufsize, ALuint* buf)
 
 	if (strncmp(subchunk1, "fmt", 3))
 	{
+		AL_LOG("Bad subchunk - expected \"fmt\", got %s\n", subchunk1);
 		return 1;
 	}
 
@@ -228,6 +258,7 @@ static int audio_wav_from_data_MEM(void* p, int bufsize, ALuint* buf)
 
 	if (format != 1)
 	{
+		AL_LOG("Format is %i, expected 1\n", format);
 		return 1;
 	}
 
@@ -248,6 +279,7 @@ static int audio_wav_from_data_MEM(void* p, int bufsize, ALuint* buf)
 			ALformat = num_channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
 		break;
 		default:
+			AL_LOG("bits_per_sample is %i, expected 8 for 16\n", bits_per_sample);
 			return 1;
 		break;
 	}
@@ -256,7 +288,15 @@ static int audio_wav_from_data_MEM(void* p, int bufsize, ALuint* buf)
 
 	if (strncmp(subchunk2, "data", 4))
 	{
-		return 1;
+		//Some sound effects like the vehicle mounted M249 have
+		//the data header 2 bytes after the expected offset
+		p = (char*)p - 2;
+		stream_read(&subchunk2, &p, sizeof(subchunk2));
+		if (strncmp(subchunk2, "data", 4))
+		{
+			AL_LOG("Subchunk 2 ID is %s, expected \"data\"\n", subchunk2);
+			return 1;
+		}
 	}
 
 	stream_read(&subchunk2size, &p, sizeof(subchunk2size));
@@ -291,11 +331,11 @@ DLL_API CS_SAMPLE * F_API CS_Sample_Load(int index, const char *name_or_data, un
 			strcpy(samp->filename, "<MEMORY>");
 
 			buffers.push_back(samp);
-			printf("OpenAL: There are now %i buffers.\n", buffers.size());
+			AL_LOG("OpenAL: There are now %i buffers.\n", buffers.size());
 		}
 		else
 		{
-			printf("OpenAL: Failed to load wav\n");
+			AL_LOG("OpenAL: Failed to load wav\n");
 		}
 	}
 	else
@@ -348,7 +388,7 @@ DLL_API int             F_API CS_GetError()
 #endif
 DLL_API float           F_API CS_GetVersion()
 {
-	return 3.74f;
+	return CS_VERSION;
 }
 
 DLL_API int             F_API CS_GetOutput()
@@ -384,7 +424,12 @@ DLL_API const char *    F_API CS_GetDriverName(int id)
 {
 	if (id == 0)
 	{
+#ifndef LINUX64
+		return (signed char*)"OpenAL";
+#else
 		return "OpenAL";
+#endif
+		
 	}
 	return nullptr;
 }
@@ -439,88 +484,13 @@ DLL_API signed char     F_API CS_Stream_SetBufferSize(int ms)
 	return 0;
 }
 
+#ifndef LINUX64
+DLL_API CS_STREAM* F_API CS_Stream_Open(const char* name_or_data, unsigned int mode, int offset, int length);
+#endif
+
 DLL_API CS_STREAM* F_API CS_Stream_OpenFile(const char* filename, unsigned int mode, int memlength)
 {
-	return 0;
-}
-
-static int audio_wav_from_data_FILE(FILE* fp, int bufsize, ALuint* buf)
-{
-	ALenum ALformat;
-	char header[4], wave_header[4], subchunk1[4], subchunk2[4];
-	char* temp_buffer;
-	unsigned int size, frequency, subchunk2size, unused_int;
-	unsigned short num_channels, bits_per_sample, format, unused_short;
-	*buf = 0;
-
-	my_fread(&header, sizeof(header), fp);
-
-	if (strncmp(header, "RIFF", 4))
-	{
-		return 1;
-	}
-
-	my_fread(&size, sizeof(size), fp);
-	my_fread(&wave_header, sizeof(wave_header), fp);
-
-	if (strncmp(wave_header, "WAVE", 4))
-	{
-		return 1;
-	}
-
-	my_fread(&subchunk1, sizeof(subchunk1), fp);
-
-	if (strncmp(subchunk1, "fmt", 3))
-	{
-		return 1;
-	}
-
-	my_fread(&unused_int, sizeof(unused_int), fp); //subchunk 1 size
-	my_fread(&format, sizeof(format), fp);
-
-	if (format != 1)
-	{
-		return 2;
-	}
-
-	my_fread(&num_channels, sizeof(num_channels), fp);
-	my_fread(&frequency, sizeof(frequency), fp);
-
-	my_fread(&unused_int, sizeof(unused_int), fp); //ByteRate
-	my_fread(&unused_short, sizeof(unused_short), fp); //BlockAlign
-
-	my_fread(&bits_per_sample, sizeof(bits_per_sample), fp);
-
-	switch (bits_per_sample)
-	{
-		case 8:
-			ALformat = num_channels == 2 ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
-		break;
-		case 16:
-			ALformat = num_channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
-		break;
-		default:
-			return 1;
-		break;
-	}
-
-	my_fread(&subchunk2, sizeof(subchunk2), fp);
-
-	if (strncmp(subchunk2, "data", 4))
-	{
-		return 1;
-	}
-
-	my_fread(&subchunk2size, sizeof(subchunk2size), fp);
-
-	temp_buffer = new char[subchunk2size];
-
-	my_fread(temp_buffer, subchunk2size, fp);
-
-	alGenBuffers(1, buf);
-	alBufferData(*buf, ALformat, temp_buffer, subchunk2size, frequency);
-	delete [] temp_buffer;
-	return 0;
+	return CS_Stream_Open(filename, mode, 0, memlength);
 }
 
 static int audio_ogg_from_data(unsigned char* p, int bufsize, ALuint* buf)
@@ -558,7 +528,11 @@ static int audio_ogg_from_data(unsigned char* p, int bufsize, ALuint* buf)
 
 DLL_API CS_STREAM*    F_API CS_Stream_Open(const char *name_or_data, unsigned int mode, int offset, int length)
 {
+#ifndef LINUX64
+	unsigned int file = my_fopen(name_or_data);
+#else
 	FILE *file = (FILE*)my_fopen(name_or_data);
+#endif
 	int len;
 	unsigned char* buf;
 	int ret;
@@ -603,7 +577,7 @@ DLL_API CS_STREAM*    F_API CS_Stream_Open(const char *name_or_data, unsigned in
 				strcpy(samp->filename, name_or_data);
 				
 				buffers.push_back(samp);
-				printf("OpenAL: There are now %lu buffers.\n", buffers.size());
+				AL_LOG("OpenAL: There are now %lu buffers.\n", buffers.size());
 			}
 			else
 			{
@@ -621,8 +595,15 @@ DLL_API CS_STREAM*    F_API CS_Stream_Open(const char *name_or_data, unsigned in
 	{
 		if (file)
 		{
-			ret = audio_wav_from_data_FILE(file, 0, &thebuf);
+			my_fseek(file, 0, SEEK_END);
+			len = my_ftell(file);
+			
+			buf = new unsigned char[len];
+			my_fseek(file, 0, SEEK_SET);
+			my_fread(buf, len, file);
 			my_fclose(file);
+			
+			ret = audio_wav_from_data_MEM(buf, len, &thebuf);
 			if (ret == 0)
 			{
 				samp = new ALSample_t;
@@ -631,11 +612,11 @@ DLL_API CS_STREAM*    F_API CS_Stream_Open(const char *name_or_data, unsigned in
 				strcpy(samp->filename, name_or_data);
 				
 				buffers.push_back(samp);
-				printf("OpenAL: There are now %lu buffers.\n", buffers.size());
+				AL_LOG("OpenAL: There are now %lu buffers.\n", buffers.size());
 			}
 			else
 			{
-				printf("OpenAL: %s has a bad format!\n", name_or_data);
+				AL_LOG("OpenAL: %s has a bad format!\n", name_or_data);
 			}
 		}
 		else
@@ -658,18 +639,42 @@ DLL_API CS_STREAM* F_API CS_Stream_Create(CS_STREAMCALLBACK callback, int length
 DLL_API CS_STREAM* F_API CS_Stream_Create(CS_STREAMCALLBACK callback, int length, unsigned int mode, int samplerate, void *userdata)
 #endif
 {
-	return 0;
+	stream_source = new ALuint;
+	alGenSources(1, stream_source);
+	musicBuffer = new char[length];
+	musicBufferLen = length;
+	my_streamcb = callback;
+	musicUserData = userdata;
+
+	return (CS_STREAM*)stream_source;
 }
 
 DLL_API signed char     F_API CS_Stream_Close(CS_STREAM* stream)
 {
-	__builtin_trap();
-	return 0;
+	ALuint* src = (ALuint*)stream;
+	alDeleteSources(1, src);
+	delete src;
+	delete [] musicBuffer;
+	musicBufferLen = 0;
+	return 1;
 }
 
 DLL_API int             F_API CS_Stream_Play(int channel, CS_STREAM* stream)
 {
-	return -1;
+	ALuint src;
+	if (channel != CS_FREE)
+	{
+		__builtin_trap();
+		return -1;
+	}
+
+	src = *stream_source;
+	alSourcei(src, AL_SOURCE_RELATIVE, AL_TRUE);
+	alSource3f(src, AL_POSITION, 0.0f, 0.0f, 0.0f);
+	alSource3f(src, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+	alSourcePlay(src);
+
+	return MAX_SOURCES;
 }
 
 DLL_API int             F_API CS_Stream_PlayEx(int channel, CS_STREAM* stream, CS_DSPUNIT* dsp, signed char startpaused)
@@ -697,6 +702,9 @@ DLL_API int             F_API CS_Stream_PlayEx(int channel, CS_STREAM* stream, C
 	}
 	
 	alSourcei(src, AL_BUFFER, samp->buf);
+	alSourcei(src, AL_SOURCE_RELATIVE, AL_TRUE);
+	alSource3f(src, AL_POSITION, 0.0f, 0.0f, 0.0f);
+	alSource3f(src, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
 	//alSourcei(src, AL_LOOPING, samp->flags & CS_LOOP_NORMAL ? AL_TRUE : AL_FALSE);
 	alSourcePlay(src);
 	if (startpaused)
@@ -711,7 +719,25 @@ DLL_API signed char     F_API CS_Stream_Stop(CS_STREAM* stream)
 {
 	size_t i;
 	ALint buffer;
-	ALSample_t* samp = (ALSample_t*)stream;
+	ALSample_t* samp;
+	int num_buffers;
+
+	if (stream_source == (ALuint*)stream)
+	{
+		alSourceStop(*stream_source);
+		alGetSourcei(*stream_source, AL_BUFFERS_QUEUED, &num_buffers);
+
+		for (i = 0; i < num_buffers; i++)
+		{
+			alSourceUnqueueBuffers(*stream_source, 1, (ALuint*)&buffer);
+			alDeleteBuffers(1, (ALuint*)&buffer);
+		}
+
+		return 1;
+	}
+
+	samp = (ALSample_t*)stream;
+
 	for (i = 0; i < MAX_SOURCES; i++)
 	{
 		alGetSourcei(sources[i], AL_BUFFER, &buffer);
@@ -808,7 +834,41 @@ DLL_API signed char     F_API CS_FX_SetWavesReverb(int fxid, float InGain, float
 
 DLL_API void            F_API CS_Update()
 {
+	ALenum state;
+	ALuint buffer, stream_buf;
+	int i;
+	int num_processed_buffers = 0;
+	int num_queued_buffers = 0;
+	alGetSourcei(*stream_source, AL_SOURCE_STATE, &state);
+	alGetSourcei(*stream_source, AL_BUFFERS_PROCESSED, &num_processed_buffers);
 
+	for (i = 0; i < num_processed_buffers; i++)
+	{
+		alSourceUnqueueBuffers(*stream_source, 1, &buffer);
+		alDeleteBuffers(1, &buffer);
+	}
+
+	alGetSourcei(*stream_source, AL_BUFFERS_QUEUED, &num_queued_buffers);
+
+	if (num_queued_buffers < MIN_QUEUED_BUFFERS)
+	{
+		if (my_streamcb)
+		{
+			my_streamcb((CS_STREAM*)stream_source, musicBuffer,
+				musicBufferLen, musicUserData);
+
+			alGenBuffers(1, &stream_buf);
+			alBufferData(stream_buf, AL_FORMAT_STEREO16,
+				(ALvoid *)musicBuffer, musicBufferLen, 44100);
+			alSourceQueueBuffers(*stream_source, 1, &stream_buf);
+			alGetSourcei(*stream_source, AL_BUFFERS_QUEUED, &num_queued_buffers);
+
+			if (state != AL_PLAYING)
+			{
+				alSourcePlay(*stream_source);
+			}
+		}
+	}
 }
 
 DLL_API void            F_API CS_SetSpeakerMode(unsigned int speakermode)
@@ -865,6 +925,8 @@ DLL_API signed char     F_API CS_3D_SetAttributes(int channel, const float *pos,
 	{
 		return 0;
 	}
+
+	alSourcei(sources[channel], AL_SOURCE_RELATIVE, AL_FALSE);
 
 	if (pos)
 	{
@@ -1082,6 +1144,9 @@ DLL_API int             F_API CS_PlaySoundEx(int channel, CS_SAMPLE *sptr, CS_DS
 	}
 
 	alSourcei(src, AL_BUFFER, samp->buf);
+	alSourcei(src, AL_SOURCE_RELATIVE, AL_TRUE);
+	alSource3f(src, AL_POSITION, 0.0f, 0.0f, 0.0f);
+	alSource3f(src, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
 	//alSourcei(src, AL_LOOPING, samp->flags & CS_LOOP_NORMAL ? AL_TRUE : AL_FALSE);
 	alSourcePlay(src);
 	if (startpaused)
@@ -1143,7 +1208,11 @@ DLL_API signed char     F_API CS_Sample_SetMaxPlaybacks(CS_SAMPLE *sptr, int max
 	return 0;
 }
 
-DLL_API signed char      CS_Reverb_SetProperties(const CS_REVERB_PROPERTIES *prop)
+#ifndef LINUX64
+DLL_API signed char   F_API   CS_Reverb_SetProperties(CS_REVERB_PROPERTIES *prop)
+#else
+DLL_API signed char   F_API   CS_Reverb_SetProperties(const CS_REVERB_PROPERTIES *prop)
+#endif
 {
 	return 0;
 }

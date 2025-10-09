@@ -881,6 +881,7 @@ bool CSystem::Update( int updateFlags, int nPauseMode )
 			switch (event.type)
 			{
 			case SDL_QUIT: Quit(); break;
+			case SDL_TEXTINPUT: break; //ignore
 			case SDL_WINDOWEVENT:
 			{
 				switch (event.window.type)

@@ -7611,7 +7611,7 @@ void CD3D9Renderer::EF_PipeLine(int nums, int nume, int nList, void (*RenderFunc
     SRendItem::mfGet(ri->SortVal, &nObject, &pShader, &pShaderState, &nFog, &pRes);
     bChanged = (pCurRes != pRes || pShader != pCurShader || pShaderState != pCurShaderState || nFog != nCurFog);
 #else
-    if (oldVal.i.High == ri->SortVal.i.High && !((oldVal.i.Low ^ ri->SortVal.i.Low) & 0x000fffff))
+    if (uint64_comp(oldVal.SortVal, ri->SortVal.SortVal) == 0)
     {
       SRendItem::mfGetObj(ri->SortVal, &nObject);
       bChanged = false;

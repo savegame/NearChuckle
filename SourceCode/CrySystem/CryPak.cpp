@@ -214,6 +214,7 @@ const char* CCryPak::AdjustFileName(const char *src, char *dst, unsigned nFlags,
 	char buf[g_nMaxPath];
 	char tmp[g_nMaxPath];
 	char* needle;
+	char* corrected;
 
 	strcpy(buf, src);
 
@@ -292,6 +293,12 @@ const char* CCryPak::AdjustFileName(const char *src, char *dst, unsigned nFlags,
 		{
 			dst[i] = '/';
 		}
+	}
+
+	corrected = alloca(strlen(dst) + 3);
+	if (casepath(dst, corrected))
+	{
+		strcpy(dst, corrected);
 	}
 
 	return dst;

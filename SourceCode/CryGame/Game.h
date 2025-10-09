@@ -762,6 +762,7 @@ public:
 
 	ICVar* cv_game_subtitles;
 	ICVar* g_first_person_spectator;
+	ICVar* cv_game_fov;
 
 	ICVar* g_timedemo_file;
 

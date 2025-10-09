@@ -1003,6 +1003,7 @@ void CXGame::InitConsoleVars()
 		"Default value is 0, disabled.\n");
 
 	g_first_person_spectator = pConsole->CreateVariable("gr_first_person_spectator","0",VF_REQUIRE_NET_SYNC);
+	cv_game_fov = pConsole->CreateVariable("game_fov", "90", VF_DUMPTODISK);
 }
 
 void CXGame::ResetInputMap()

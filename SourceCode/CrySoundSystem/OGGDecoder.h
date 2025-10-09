@@ -54,7 +54,7 @@ protected:
 	int m_nPosBytes;
 	OggVorbis_File m_OVFile;
 private:
-	bool FillPCMBuffer(signed long *pBuffer, int nSamples);
+	bool FillPCMBuffer(signed int *pBuffer, int nSamples);
 public:
 	static size_t ReadFile(void *ptr, size_t size, size_t nmemb, void *datasource);
 	static int SeekFile(void *datasource, ogg_int64_t offset, int whence);
@@ -70,5 +70,5 @@ public:
 	//! Retrieve the current position in the file (in samples)
 	int GetPos();
 	//! Decode and retrieve pcm-data (stereo/16bit).
-	bool GetPCMData(signed long *pDataOut, int nSamples, bool bLoop=true);
+	bool GetPCMData(signed int *pDataOut, int nSamples, bool bLoop=true);
 };

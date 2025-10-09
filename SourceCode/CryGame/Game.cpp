@@ -888,9 +888,37 @@ bool CXGame::Update()
 			if ((*pl)->GetEntity() && (*pl)->GetEntity()->GetPhysics())
 				(*pl)->GetEntity()->GetPhysics()->SetParams(&pf);
 	}
+
+	ICVar* pVarFOV = m_pSystem->GetIConsole()->GetCVar("game_fov");
+	float fov = 90.0f;
+	if (pVarFOV)
+	{
+		fov = pVarFOV->GetFVal();
+	}
 	
 	if (!m_pSystem->Update(IsMultiplayer() ? ESYSUPDATE_MULTIPLAYER:0, nPauseMode)) //Update returns false when quitting
 		return (false);
+
+	if (pVarFOV)
+	{
+		if (fabs(pVarFOV->GetFVal() - fov) > 0.001f)
+		{
+			fov = (pVarFOV->GetFVal() * 3.14159f) / 180.0f;
+			CXClient* pClient = GetClient();
+			if (pClient)
+			{
+				IEntity* pEntity = pClient->m_pISystem->GetLocalPlayer();
+				IEntityCamera* pCamera = pEntity->GetCamera();
+				IRenderer* pRenderer = m_pUISystem->GetIRenderer();
+				if (pCamera)
+				{
+					pCamera->SetFov(fov,m_pRenderer->GetWidth(),m_pRenderer->GetHeight());
+				}
+			}
+
+			m_pScriptSystem->ExecuteFile("scripts/default/hud/zoomview.lua", true, true);
+		}
+	}
 
 	if (IsMultiplayer()) {
 		pe_params_flags pf; pf.flagsAND = ~pef_update;
