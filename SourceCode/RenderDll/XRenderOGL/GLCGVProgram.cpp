@@ -244,6 +244,8 @@ static char *sAdditionalVP[] =
 SCGScript *CCGVProgram_GL::mfGenerateScriptVP(CVProgram *pPosVP)
 {
   TArray<char> newScr;
+  char temp1[1024];
+  char temp2[1024];
 
   if (m_DeclarationsScript)
     newScr.Copy(m_DeclarationsScript->m_Script, strlen(m_DeclarationsScript->m_Script));
@@ -253,26 +255,26 @@ SCGScript *CCGVProgram_GL::mfGenerateScriptVP(CVProgram *pPosVP)
     szInputParms = m_InputParmsScript->m_Script;
   if (m_PosScript && m_PosScript->m_Name != m_Insts[m_CurInst].m_PosScriptName)
   {
-    char str[1024];
-    strcpy(str, szInputParms);
-    szInputParms = str;
+    memset(temp1, 0, sizeof(temp1));
+    strcpy(temp1, szInputParms);
+    szInputParms = temp1;
     if (pPosVP && pPosVP->m_bCGType)
     {
       CCGVProgram_GL *pVPGL = (CCGVProgram_GL *)pPosVP;
       for (int i=0; i<pVPGL->m_ParamsNoObj.Num(); i++)
       {
-        if (!strstr(str, pVPGL->m_ParamsNoObj[i].m_Name.c_str()))
+        if (!strstr(temp1, pVPGL->m_ParamsNoObj[i].m_Name.c_str()))
         {
-          strcat(str, ", uniform float4 ");
-          strcat(str, pVPGL->m_ParamsNoObj[i].m_Name.c_str());
+          strcat(temp1, ", uniform float4 ");
+          strcat(temp1, pVPGL->m_ParamsNoObj[i].m_Name.c_str());
         }
       }
       for (int i=0; i<pVPGL->m_ParamsObj.Num(); i++)
       {
-        if (!strstr(str, pVPGL->m_ParamsObj[i].m_Name.c_str()))
+        if (!strstr(temp1, pVPGL->m_ParamsObj[i].m_Name.c_str()))
         {
-          strcat(str, ", uniform float4 ");
-          strcat(str, pVPGL->m_ParamsObj[i].m_Name.c_str());
+          strcat(temp1, ", uniform float4 ");
+          strcat(temp1, pVPGL->m_ParamsObj[i].m_Name.c_str());
         }
       }
     }
@@ -281,9 +283,8 @@ SCGScript *CCGVProgram_GL::mfGenerateScriptVP(CVProgram *pPosVP)
   if (m_SubroutinesScript)
     newScr.Copy(m_SubroutinesScript->m_Script, strlen(m_SubroutinesScript->m_Script));
 
-  char str[1024];
-  sprintf(str, "vertout main(appin IN, %s)\n{\n  vertout OUT;\n", szInputParms);
-  newScr.Copy(str, strlen(str));
+  sprintf(temp2, "vertout main(appin IN, %s)\n{\n  vertout OUT;\n", szInputParms);
+  newScr.Copy(temp2, strlen(temp2));
 
   if (pPosVP)
   {
