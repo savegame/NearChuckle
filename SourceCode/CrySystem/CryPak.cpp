@@ -238,13 +238,17 @@ const char* CCryPak::AdjustFileName(const char *src, char *dst, unsigned nFlags,
 
 		strcpy(dst, rp);
 		strcat(dst, "/");
-		//don't allow paths with multiple forward slashes
+		//don't allow paths with multiple forward or back slashes
 		len = strlen(src);
 		for (i = 0; i < len; i++)
 		{
 			if (i < len - 1)
 			{
 				if (src[i] == '/' && src[i + 1] == '/')
+				{
+					continue;
+				}
+				if (src[i] == '\\' && src[i + 1] == '\\')
 				{
 					continue;
 				}
