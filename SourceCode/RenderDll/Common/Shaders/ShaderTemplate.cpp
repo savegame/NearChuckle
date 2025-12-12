@@ -1175,7 +1175,7 @@ void CShader::mfCheckShaderResTexturesHW(TArray<SShaderPassHW> &Dst, SShader *ef
         if (!Tex->m_TU.m_TexPic)
         {
           Tex->m_TU.m_TexPic = mfLoadResourceTexture(Tex->m_Name.c_str(), patch, Tex->m_TU.GetTexFlags() | Flags, Tex->m_TU.GetTexFlags2(), eTT_Cubemap, ef, Tex);
-          if (!Tex->m_TU.m_TexPic->IsTextureLoaded())
+          if (!Tex->m_TU.m_TexPic || !Tex->m_TU.m_TexPic->IsTextureLoaded())
           {
             Tex->m_TU.m_TexPic = mfLoadResourceTexture("Textures/Defaults/DefaultCM", patch, Tex->m_TU.GetTexFlags() | Flags, Tex->m_TU.GetTexFlags2(), eTT_Cubemap, ef, Tex);
           }
