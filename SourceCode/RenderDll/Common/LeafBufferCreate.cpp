@@ -923,7 +923,7 @@ public:
 
 bool CLeafBuffer::CreateTangBuffer()
 {
-  return false;
+  //return false;
   assert(m_pSecVertBuffer);
   if (!m_pSecVertBuffer)
     return false;
