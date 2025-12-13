@@ -40,7 +40,7 @@ template <class Type> class DynamicIB
       assert((hr == D3D_OK) && (m_pIB));
     }
 
-    LPDIRECT3DVERTEXBUFFER9 GetInterface() const { return m_pIB; }
+    LPDIRECT3DINDEXBUFFER9 GetInterface() const { return m_pIB; }
 
     Type* Lock(const unsigned int& theLockCount, int &nOffs)
     {
@@ -98,4 +98,4 @@ template <class Type> class DynamicIB
   
 };
 
-#endif  _DynamicIB_H_
+#endif  //_DynamicIB_H_

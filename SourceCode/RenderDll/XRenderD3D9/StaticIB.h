@@ -85,4 +85,4 @@ template < class IndexType > class StaticIB
 typedef StaticIB< unsigned short > StaticIB16;
 typedef StaticIB< unsigned int > StaticIB32;
 
-#endif  _STATICIB_H_
+#endif  //_STATICIB_H_

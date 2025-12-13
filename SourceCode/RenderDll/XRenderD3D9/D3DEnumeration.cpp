@@ -367,8 +367,8 @@ HRESULT CD3DEnumeration::Enumerate()
         m_pD3D->EnumAdapterModes( adapterOrdinal, allowedAdapterFormat, mode, &displayMode );
         if( displayMode.Width < AppMinFullscreenWidth || displayMode.Height < AppMinFullscreenHeight || ColorChannelBits(displayMode.Format) < AppMinColorChannelBits )
           continue;
-        pAdapterInfo->m_MaxWidth = max(pAdapterInfo->m_MaxWidth, displayMode.Width);
-        pAdapterInfo->m_MaxHeight = max(pAdapterInfo->m_MaxHeight, displayMode.Height);
+        pAdapterInfo->m_MaxWidth = crymax(pAdapterInfo->m_MaxWidth, displayMode.Width);
+        pAdapterInfo->m_MaxHeight = crymax(pAdapterInfo->m_MaxHeight, displayMode.Height);
         pAdapterInfo->pDisplayModeList->AddElem(displayMode);
         if(adapterFormatList.Find(displayMode.Format) < 0)
           adapterFormatList.AddElem(displayMode.Format);

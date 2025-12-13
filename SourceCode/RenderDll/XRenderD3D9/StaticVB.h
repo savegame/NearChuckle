@@ -78,4 +78,4 @@ template <class VertexType> class StaticVB
   
 };
 
-#endif  _StaticVB_H_
+#endif  //_StaticVB_H_

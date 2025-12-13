@@ -695,7 +695,7 @@ CStarDef::~CStarDef()
 
 HRESULT CStarDef::Construct()
 {
-  ZeroMemory( m_strStarName, sizeof(m_strStarName) );
+  memset( m_strStarName, 0, sizeof(m_strStarName) );
 
   m_nStarLines	= 0 ;
   m_pStarLine		= NULL ;
@@ -910,7 +910,7 @@ CGlareDef::~CGlareDef()
 
 HRESULT CGlareDef::Construct()
 {
-  ZeroMemory( m_strGlareName, sizeof(m_strGlareName) );
+  memset( m_strGlareName, 0, sizeof(m_strGlareName) );
 
   m_fGlareLuminance	= 0.0f ;
   m_fBloomLuminance	= 0.0f ;
@@ -2350,6 +2350,7 @@ bool HDR_RenderStar()
   CCGPShader_D3D *fpMergeTextures = NULL;
   bool bResult = false;
   SCGBind *bind = NULL;
+  int nBitPlanes = 1;
 
   D3DXVECTOR4 avSampleOffsets[16];
   D3DXVECTOR4 avSampleWeights[16];
@@ -2486,7 +2487,7 @@ bool HDR_RenderStar()
       D3DSURFACE_DESC srcDesc;
       LPDIRECT3DTEXTURE9 pTex = (LPDIRECT3DTEXTURE9)pTexSource[0]->m_RefTex.m_VidTex;
       pTex->GetLevelDesc(0, &srcDesc);
-      int nBitPlanes = 1;
+      nBitPlanes = 1;
       BOOL bSplitOutput = FALSE;
       if (rd->m_bDeviceSupportsMRT && srcDesc.Format==D3DFMT_G16R16F)
       {
@@ -2564,7 +2565,7 @@ bool HDR_RenderStar()
   pSurfDest[0] = apSurfStar[0][0];
   pSurfDest[1] = apSurfStar[0][1];
 
-  int nBitPlanes = (rd->m_bDeviceSupportsMRT) ? 2 : 1;
+  nBitPlanes = (rd->m_bDeviceSupportsMRT) ? 2 : 1;
 
   for (int iBitPlane=0; iBitPlane<nBitPlanes; iBitPlane++)
   {

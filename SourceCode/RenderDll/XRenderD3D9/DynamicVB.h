@@ -98,4 +98,4 @@ template <class VertexType> class DynamicVB
   
 };
 
-#endif  _DynamicVB_H_
+#endif  //_DynamicVB_H_

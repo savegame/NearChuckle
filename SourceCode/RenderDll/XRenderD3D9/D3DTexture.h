@@ -824,4 +824,4 @@ public:
 
 //vlad123
 
-#endif __D3DTEXTURE_H
+#endif //__D3DTEXTURE_H

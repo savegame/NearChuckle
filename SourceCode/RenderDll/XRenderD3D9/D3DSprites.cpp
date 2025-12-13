@@ -9,7 +9,7 @@
 #include <IStatObj.h>
 #include <I3DEngine.h>
 #include <IEntityRenderState.h>
-#include "../Cry3DEngine/Terrain.h"
+#include "../Cry3DEngine/terrain.h"
 #include "../Cry3DEngine/StatObj.h"
 #include "../Cry3DEngine/ObjMan.h"
 
