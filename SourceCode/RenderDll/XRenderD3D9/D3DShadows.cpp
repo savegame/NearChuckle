@@ -15,7 +15,7 @@
 #include "D3DCGVProgram.h"
 #include "D3DCGPShader.h"
 
-#include "I3dengine.h"
+#include "I3DEngine.h"
 
 void WriteTGA8(byte *data8, int width, int height, char *filename);
 void BlurImage8(byte * pImage, int nSize, int nPassesNum);
@@ -380,7 +380,7 @@ void CD3D9Renderer::DrawAllShadowsOnTheScreen()
   float height=600;
   Set2DMode(true, (int)width, (int)height);
 
-  float fArrDim = max(4, sqrt(float(MAX_DYNAMIC_SHADOW_MAPS_COUNT)));
+  float fArrDim = crymax(4, sqrt(float(MAX_DYNAMIC_SHADOW_MAPS_COUNT)));
   float fPicDimX = width/fArrDim;
   float fPicDimY = height/fArrDim;
   int nShadowId=0;
@@ -918,7 +918,7 @@ void MakePenumbraTextureFromDepthMap(byte * pDepthMapIn, int nSize, byte * pPenu
       
      fVal = (fVal*2.f) + 127.f;
 
-      DATA(x,y) = uchar( max(min(fVal,255),0) );
+      DATA(x,y) = uchar( crymax(crymin(fVal,255),0) );
     }
   }
 

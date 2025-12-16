@@ -12,13 +12,14 @@
 #include "D3DCGPShader.h"
 #include "D3DCGVProgram.h"
 
+#ifndef __linux
 #ifndef PS2
 #include <direct.h>
 #include <io.h>
 #else
 #include "File.h"
 #endif
-
+#endif //not __linux
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 

@@ -10,14 +10,14 @@
 #include "RenderPCH.h"
 #include "DriverD3D9.h"
 #include "D3DCGVProgram.h"
-
+#ifndef __linux
 #ifndef PS2
 #include <direct.h>
 #include <io.h>
 #else
 #include "File.h"
 #endif
-
+#endif //__linux
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 

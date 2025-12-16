@@ -9,7 +9,7 @@
 
 #include "RenderPCH.h"
 #include "DriverD3D9.h"
-#include "I3dengine.h"
+#include "I3DEngine.h"
 #include "CryHeaders.h"
 #include "../Common/RendElements/CREScreenCommon.h"
 
@@ -5112,7 +5112,7 @@ HRESULT CFurMap::Initialize(int seed, int size, int num, SFurLayers *fl)
       for (layer=0; layer<num; layer++)
       {
         // lower layer is darker
-        t = max(0, 1 - 2 * float(layer) / (num-1));
+        t = crymax(0, 1 - 2 * float(layer) / (num-1));
         DATA(layer, x, y) = color * float(1 - 0.7f * powf(t, 1.5f));
       }
 
@@ -5123,7 +5123,7 @@ HRESULT CFurMap::Initialize(int seed, int size, int num, SFurLayers *fl)
       for (layer=0; layer<length; layer++)
       {
         // tip of the hair is semi-transparent
-        t = max(0, -1 + 2 * float(layer+1) / length);
+        t = crymax(0, -1 + 2 * float(layer+1) / length);
         DATA(layer, x, y).a = 1 - 0.85f * powf(t, 2.0f);
       }
     }
@@ -5472,7 +5472,7 @@ void CD3D9TexMan::GenerateFurLightMap()
     float HN = float(j)/(t_size-1); // t = H dot N
     float Lz = float(2*k)/(r_size-1) - 1; // r = L.z
 
-    float diffuse  = 0.2f + 0.2f * max(0, Lz) + 0.6f * powf(1 - LN*LN, 0.5f*diff_power);
+    float diffuse  = 0.2f + 0.2f * crymax(0, Lz) + 0.6f * powf(1 - LN*LN, 0.5f*diff_power);
     float specular = powf(1 - HN*HN, 0.5f*spec_power);
     float shadow   = powf(cosf(D3DX_PI/2 * CLAMP(-0.2f-1.4f*Lz, 0.0f, 1.0f)), 4);
 
@@ -5787,7 +5787,7 @@ void CD3D9TexMan::GenerateDepthLookup()
   //gRenDev->m_TexMan->m_Text_Depth->SaveTGA("Depth.tga", false);
 }
 
-#include "D3DCubemaps.h"
+#include "D3DCubeMaps.h"
 
 void CD3D9TexMan::GenerateFuncTextures()
 {

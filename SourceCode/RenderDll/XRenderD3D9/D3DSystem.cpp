@@ -9,7 +9,9 @@
 
 #include "RenderPCH.h"
 #include "DriverD3D9.h"
+#ifndef __linux
 #include <dxerr.h>
+#endif
 #include "D3DCGVProgram.h"
 #include "D3DCGPShader.h"
 
@@ -2631,7 +2633,7 @@ HRESULT CD3D9Renderer::InitDeviceObjects()
   }
   else
   if( !m_d3dCaps.MaxTextureAspectRatio )
-    m_d3dCaps.MaxTextureAspectRatio = max(1,max(m_d3dCaps.MaxTextureWidth,m_d3dCaps.MaxTextureHeight));
+    m_d3dCaps.MaxTextureAspectRatio = crymax(1,crymax(m_d3dCaps.MaxTextureWidth,m_d3dCaps.MaxTextureHeight));
   if( m_d3dCaps.RasterCaps & D3DPRASTERCAPS_FOGRANGE )
     iLog->Log ("D3D Driver: Supports range-based fog\n");
   if( m_d3dCaps.RasterCaps & D3DPRASTERCAPS_WFOG )
@@ -2823,7 +2825,7 @@ HRESULT CD3D9Renderer::InitDeviceObjects()
   if (CRenderer::CV_r_texturesstreampoolsize <= 0)
     CRenderer::CV_r_texturesstreampoolsize = (int)(m_MaxTextureMemory/1024.0f/1024.0f*0.75f);
 
-  m_MaxTextureSize = min(m_d3dCaps.MaxTextureHeight, m_d3dCaps.MaxTextureWidth); //min(wdt, hgt);
+  m_MaxTextureSize = crymin(m_d3dCaps.MaxTextureHeight, m_d3dCaps.MaxTextureWidth); //min(wdt, hgt);
 
   m_Features &= ~RFT_DEPTHMAPS;
   if (m_d3dCaps.MaxSimultaneousTextures <= 2)
