@@ -13,6 +13,9 @@
 
 #define CONST const
 #define DECLARE_HANDLE(name) struct name##__ { int unused; }; typedef struct name##__ *name
+#ifdef DIRECT3D9
+#define HANDLE void*
+#endif
 
 extern HANDLE CreateFile(const char* lpFileName,DWORD dwDesiredAccess,DWORD dwShareMode,void* lpSecurityAttributes,DWORD dwCreationDisposition,DWORD dwFlagsAndAttributes,HANDLE hTemplateFile);
 extern BOOL CloseHandle(HANDLE hObject);
@@ -61,7 +64,7 @@ extern HRESULT GetOverlappedResult(HANDLE hFile, void* lpOverlapped, LPDWORD lpN
 extern const BOOL compareTextFileStrings(const char* cpReadFromFile, const char* cpToCompareWith);
 extern unsigned long timeGetTime(void);
 
-
+#ifndef DIRECT3D9
 typedef struct _MEMORYSTATUS
 {
     DWORD dwLength;
@@ -84,6 +87,7 @@ typedef struct tagRECT
     LONG    right;
     LONG    bottom;
 } RECT, * PRECT;
+#endif
 
 typedef union _ULARGE_INTEGER
 {
@@ -172,9 +176,10 @@ static void LeaveCriticalSection(CRITICAL_SECTION *lpCriticalSection){pthread_mu
 static void DeleteCriticalSection(CRITICAL_SECTION *lpCriticalSection){}
 #endif
 
-
+#ifndef DIRECT3D9
 extern bool QueryPerformanceCounter(LARGE_INTEGER* counter);
 extern bool QueryPerformanceFrequency(LARGE_INTEGER* frequency);
+#endif
 #ifdef __cplusplus
 
 inline uint32 GetTickCount()
@@ -295,7 +300,7 @@ extern DWORD SleepEx(DWORD dwMilliseconds, BOOL bAlertable);
 //////////////////////////////////////////////////////////////////////////
 typedef DWORD (* PTHREAD_START_ROUTINE)(LPVOID lpThreadParameter);
 typedef PTHREAD_START_ROUTINE LPTHREAD_START_ROUTINE;
-
+#ifndef DIRECT3D9
 //////////////////////////////////////////////////////////////////////////
 extern HANDLE CreateThread(
     LPSECURITY_ATTRIBUTES lpThreadAttributes,
@@ -305,7 +310,7 @@ extern HANDLE CreateThread(
     DWORD dwCreationFlags,
     LPDWORD lpThreadId
     );
-
+#endif
 //////////////////////////////////////////////////////////////////////////
 #ifdef __cplusplus
 
@@ -350,6 +355,10 @@ extern "C" char* strupr(char* str);
 
 extern char* _strtime(char* date);
 extern char* _strdate(char* date);
+
+#ifdef DIRECT3D9
+#undef HANDLE
+#endif
 
 #endif //__cplusplus
 

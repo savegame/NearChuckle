@@ -43,7 +43,9 @@
 
 #if !defined(HMONITOR_DECLARED) && (WINVER < 0x0500)
     #define HMONITOR_DECLARED
+#ifdef WIN32
     DECLARE_HANDLE(HMONITOR);
+#endif
 #endif
 
 #define D3DAPI WINAPI

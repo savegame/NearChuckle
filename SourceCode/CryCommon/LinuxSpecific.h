@@ -28,7 +28,9 @@
 typedef unsigned int				DWORD;
 typedef unsigned int*				LPDWORD;
 typedef void*								LPVOID;
+#ifndef DIRECT3D9
 #define VOID            		void
+#endif
 #define PVOID								void*
 
 //#define PHYSICS_EXPORTS
@@ -212,6 +214,7 @@ typedef struct in_addr_windows
   return c & ~0x40;
 }
 */
+#ifndef DIRECT3D9
 typedef union _LARGE_INTEGER
 {
   struct
@@ -226,7 +229,7 @@ typedef union _LARGE_INTEGER
   } u;
   long long QuadPart;
 } LARGE_INTEGER;
-
+#endif
 
 // stdlib.h stuff
 #define _MAX_DRIVE  3   // max. length of drive component
@@ -274,12 +277,14 @@ typedef struct _OVERLAPPED
     /*HANDLE*/void*  hEvent;
 } OVERLAPPED, *LPOVERLAPPED;
 
+#ifndef DIRECT3D9
 typedef struct _SECURITY_ATTRIBUTES 
 {
     DWORD nLength;
     LPVOID lpSecurityDescriptor;
     BOOL bInheritHandle;
 } SECURITY_ATTRIBUTES, *PSECURITY_ATTRIBUTES, *LPSECURITY_ATTRIBUTES;
+#endif
 
 typedef struct _FILETIME {
 	DWORD dwLowDateTime;
@@ -377,10 +382,11 @@ typedef struct
     ReferenceType operator*() const;
 		operator PointerType();
 	};
-
+#ifndef DIRECT3D9
 	typedef CHandle<int, (int)-1l> HANDLE;
-
 	typedef HANDLE EVENT_HANDLE;
+#endif
+	
 	typedef pid_t THREAD_HANDLE;
 
 #endif //__cplusplus

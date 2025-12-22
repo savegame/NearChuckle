@@ -17,7 +17,9 @@
 #endif //LINUX 
 
 #if defined(LINUX)
+#ifndef DIRECT3D9
 	#define HMODULE void*
+#endif
 	#include <dlfcn.h>
 #endif
 //! Structure filled by call to CryModuleGetMemoryInfo()
