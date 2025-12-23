@@ -1579,7 +1579,7 @@ void CD3D9TexMan::D3DCreateVideoTexture(int tgt, byte *src, int wdt, int hgt, in
       return;
   }
 
-#if 0
+#ifndef _WIN32
   if ((SrcFormat==D3DFMT_DXT1 || SrcFormat==D3DFMT_DXT3 || SrcFormat==D3DFMT_DXT5) && SrcFormat==DstFormat)
   {
     int DxtBlockSize = (ti->m_Flags & FT_DXT1) ? 8 : 16;
@@ -1599,9 +1599,9 @@ void CD3D9TexMan::D3DCreateVideoTexture(int tgt, byte *src, int wdt, int hgt, in
       
       // Lock the texture to copy the image data into the texture
       if (pID3DCubeTexture)
-        h = pID3DCubeTexture->LockRect((D3DCUBEMAP_FACES)CubeSide, i, &d3dlr, NULL, 0);
+        hr = pID3DCubeTexture->LockRect((D3DCUBEMAP_FACES)CubeSide, i, &d3dlr, NULL, 0);
       else
-        h = pID3DTexture->LockRect(i, &d3dlr, NULL, 0);
+        hr = pID3DTexture->LockRect(i, &d3dlr, NULL, 0);
       // Copy data to video texture 
       cryMemcpy((byte *)d3dlr.pBits, &src[offset], size);
       // Unlock the system texture
@@ -1656,9 +1656,9 @@ void CD3D9TexMan::D3DCreateVideoTexture(int tgt, byte *src, int wdt, int hgt, in
 
       // Lock the texture to copy the image data into the texture
       if (pID3DCubeTexture)
-        h = pID3DCubeTexture->LockRect((D3DCUBEMAP_FACES)CubeSide, i, &d3dlr, NULL, 0);
+        hr = pID3DCubeTexture->LockRect((D3DCUBEMAP_FACES)CubeSide, i, &d3dlr, NULL, 0);
       else
-        h = pID3DTexture->LockRect(i, &d3dlr, NULL, 0);
+        hr = pID3DTexture->LockRect(i, &d3dlr, NULL, 0);
       // Copy data to video texture P8
       cryMemcpy((byte *)d3dlr.pBits, src, wdt*hgt);
       // Unlock the system texture
@@ -1706,9 +1706,9 @@ void CD3D9TexMan::D3DCreateVideoTexture(int tgt, byte *src, int wdt, int hgt, in
 
       // Lock the texture to copy the image data into the texture
       if (pID3DCubeTexture)
-        h = pID3DCubeTexture->LockRect((D3DCUBEMAP_FACES)CubeSide, i, &d3dlr, NULL, 0);
+        hr = pID3DCubeTexture->LockRect((D3DCUBEMAP_FACES)CubeSide, i, &d3dlr, NULL, 0);
       else
-        h = pID3DTexture->LockRect(i, &d3dlr, NULL, 0);
+        hr = pID3DTexture->LockRect(i, &d3dlr, NULL, 0);
       // Copy data to video texture 
       cryMemcpy((byte *)d3dlr.pBits, &src[offset], size);
       // Unlock the system texture
@@ -2771,9 +2771,51 @@ void CD3D9TexMan::UpdateTextureRegion(STexPic *pic, byte *data, int X, int Y, in
   rcs.right = USize;
   rcs.top = 0;
   rcs.bottom = VSize;
+#ifdef _WIN32
   h = pID3DTexture->GetSurfaceLevel(0, &pDestSurf);
   h = D3DXLoadSurfaceFromMemory(pDestSurf, NULL, &rc, data, D3DFMT_A8R8G8B8, USize*4, NULL, &rcs, D3DX_FILTER_NONE, 0);
   SAFE_RELEASE(pDestSurf);
+#else
+  (void)pDestSurf;
+  D3DLOCKED_RECT d3dlr;
+  D3DSURFACE_DESC ddsdDescDest;
+  byte* dest;
+  int i, nSize;
+
+  if (pID3DCubeTexture)
+  {
+      h = pID3DCubeTexture->LockRect((D3DCUBEMAP_FACES)CubeSide, 0, &d3dlr, &rc, 0);
+      pID3DCubeTexture->GetLevelDesc(0, &ddsdDescDest);
+  }
+
+  else
+  {
+      h = pID3DTexture->LockRect(0, &d3dlr, &rc, 0);
+      pID3DTexture->GetLevelDesc(0, &ddsdDescDest);
+  }
+
+  dest = (byte*)d3dlr.pBits;
+
+  nSize = TexSize(USize, VSize, ddsdDescDest.Format);
+  if (ddsdDescDest.Format == D3DFMT_A8)
+  {
+      for (i = 0; i < nSize; i++)
+      {
+          *dest = data[i * 4 + 3];
+          dest++;
+      }
+  }
+  else
+  {
+      //not handled
+      __builtin_trap();
+  }
+
+  if (pID3DCubeTexture)
+      pID3DCubeTexture->UnlockRect((D3DCUBEMAP_FACES)CubeSide, 0);
+  else
+      pID3DTexture->UnlockRect(0);
+#endif
 }
 
 void CD3D9TexMan::UpdateTextureData(STexPic *pic, byte *data, int USize, int VSize, bool bProc, int State, bool bPal)
